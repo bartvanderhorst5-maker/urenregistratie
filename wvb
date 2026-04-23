@@ -1,0 +1,3360 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f1923">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Uren">
+<title>Urenregistratie</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1923;--bg2:#1a2332;--bg3:#243044;--surface:#1e2d40;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
+  --text:#f0f4f8;--text2:#8a9bb0;--text3:#566878;
+  --accent:#3d9be9;--green:#2ecc8a;--orange:#f5a623;--red:#e85555;
+  --purple:#9b7fe8;--teal:#2eccc4;
+  --radius:16px;--radius-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
+.screen{display:none;flex-direction:column;height:100vh;overflow-y:auto;}
+.screen.active{display:flex;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:52px 20px 16px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-shrink:0;}
+.topbar h1{font-size:18px;font-weight:600;}
+.topbar-sub{font-size:11px;color:var(--text2);margin-top:1px;text-transform:uppercase;letter-spacing:.5px;}
+.icon-btn{width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text2);flex-shrink:0;}
+
+/* LOGO / START */
+.logo-wrap{text-align:center;padding:40px 20px 24px;}
+.logo-icon{width:68px;height:68px;border-radius:20px;background:var(--accent);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;}
+.logo-wrap h1{font-size:23px;font-weight:600;}
+.logo-wrap p{font-size:14px;color:var(--text2);margin-top:4px;}
+.sync-bar{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--text3);padding:8px 20px 0;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);}
+.sync-dot.ok{background:var(--green);}
+.sync-dot.err{background:var(--red);}
+.sync-dot.busy{background:var(--orange);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* ROLE GRID */
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px;}
+.role-card{padding:18px 12px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);text-align:center;cursor:pointer;transition:border-color .15s,transform .1s;}
+.role-card:active{transform:scale(.97);}
+.role-card:hover{border-color:var(--border2);}
+.role-card .rc-icon{font-size:26px;margin-bottom:8px;}
+.role-card .rc-label{font-size:14px;font-weight:600;}
+.role-card .rc-sub{font-size:11px;color:var(--text2);margin-top:3px;}
+.role-card.full{grid-column:1/-1;}
+
+/* USER LIST */
+.user-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);margin-bottom:10px;cursor:pointer;transition:border-color .15s,transform .1s;}
+.user-item:active{transform:scale(.98);}
+.user-item:hover{border-color:var(--border2);}
+.avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0;}
+.av-blue{background:rgba(61,155,233,.15);color:var(--accent);border:1px solid rgba(61,155,233,.25);}
+.av-purple{background:rgba(155,127,232,.15);color:var(--purple);border:1px solid rgba(155,127,232,.25);}
+.av-green{background:rgba(46,204,138,.15);color:var(--green);border:1px solid rgba(46,204,138,.25);}
+.av-orange{background:rgba(245,166,35,.15);color:var(--orange);border:1px solid rgba(245,166,35,.25);}
+.user-info{flex:1;}
+.user-info .uname{font-size:16px;font-weight:500;}
+.user-info .usub{font-size:12px;color:var(--text2);margin-top:2px;}
+.sdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--text3);margin-right:5px;vertical-align:middle;}
+.sdot.active{background:var(--green);}
+.sdot.pauze{background:var(--orange);}
+.chevron{color:var(--text3);font-size:20px;}
+
+/* PIN */
+.pin-header{text-align:center;padding:28px 20px 16px;}
+.pin-avatar{width:60px;height:60px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:var(--accent);margin:0 auto 12px;}
+.pin-header h2{font-size:20px;font-weight:600;}
+.pin-header p{font-size:13px;color:var(--text2);margin-top:4px;}
+.pin-dots{display:flex;justify-content:center;gap:14px;margin:20px 0 4px;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);transition:all .15s;}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent);transform:scale(1.1);}
+.pin-dot.error{background:var(--red);border-color:var(--red);}
+.pin-error{text-align:center;color:var(--red);font-size:13px;min-height:18px;margin-bottom:6px;}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:4px 20px 14px;}
+.pin-key{aspect-ratio:1;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:background .1s,transform .1s;font-size:24px;font-weight:500;}
+.pin-key:active{background:var(--bg3);transform:scale(.94);}
+.pin-key .sub{font-size:9px;color:var(--text3);letter-spacing:1.5px;margin-top:2px;font-weight:400;}
+.pin-key.del{font-size:20px;color:var(--text2);}
+.pin-key.empty{background:transparent;border-color:transparent;cursor:default;}
+
+/* BUTTONS */
+.btn{display:block;width:100%;padding:15px;border-radius:var(--radius);font-size:16px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;margin-bottom:10px;transition:opacity .15s,transform .1s;}
+.btn:active{opacity:.85;transform:scale(.98);}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-success{background:var(--green);color:#0a2a1a;}
+.btn-warning{background:var(--orange);color:#2a1800;}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-ghost{background:var(--surface);color:var(--text);border:1px solid var(--border2);}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-teal{background:var(--teal);color:#0a2a25;}
+.btn-sm{padding:9px 16px;font-size:13px;width:auto;display:inline-block;margin-bottom:0;}
+
+/* DASH HEADER */
+.dash-header{background:var(--bg2);padding:50px 20px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.dash-header .greeting{font-size:11px;color:var(--text2);margin-bottom:2px;text-transform:uppercase;letter-spacing:.6px;}
+.dash-header h2{font-size:21px;font-weight:600;}
+.dash-header .ddate{font-size:13px;color:var(--text2);margin-top:3px;}
+.role-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;margin-top:7px;}
+.rp-m{background:rgba(61,155,233,.12);color:var(--accent);border:1px solid rgba(61,155,233,.2);}
+.rp-mw{background:rgba(155,127,232,.12);color:var(--purple);border:1px solid rgba(155,127,232,.2);}
+
+.status-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:40px;font-size:14px;font-weight:500;margin:16px 20px 0;flex-shrink:0;}
+.status-pill.idle{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+.status-pill.active{background:rgba(46,204,138,.12);color:var(--green);border:1px solid rgba(46,204,138,.25);}
+.status-pill.pauze{background:rgba(245,166,35,.12);color:var(--orange);border:1px solid rgba(245,166,35,.25);}
+.status-pill.vrij{background:rgba(155,127,232,.12);color:var(--purple);border:1px solid rgba(155,127,232,.25);}
+
+.timer-block{text-align:center;padding:20px 20px 16px;flex-shrink:0;}
+.timer{font-family:'DM Mono',monospace;font-size:48px;font-weight:500;letter-spacing:2px;line-height:1;}
+.timer-sub{font-size:13px;color:var(--text2);margin-top:7px;}
+
+/* BODY / SCROLL AREA */
+.body{padding:16px 20px 20px;flex:1;overflow-y:auto;}
+
+/* CARDS / FORMS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:15px;margin-bottom:12px;}
+.card-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
+.select-field{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-size:15px;padding:11px 14px;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9bb0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;margin-bottom:10px;}
+.input-field{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-size:15px;padding:11px 14px;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;margin-bottom:10px;}
+.input-field::placeholder{color:var(--text3);}
+.textarea-field{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-size:14px;padding:11px 14px;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;margin-bottom:10px;min-height:80px;resize:vertical;line-height:1.5;}
+.textarea-field::placeholder{color:var(--text3);}
+
+/* LOG ITEMS */
+.log-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;margin-bottom:9px;}
+.log-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.log-project{font-size:15px;font-weight:500;flex:1;}
+.log-uren{font-family:'DM Mono',monospace;font-size:14px;color:var(--green);font-weight:500;white-space:nowrap;}
+.log-uren.vrij{color:var(--purple);}
+.log-meta{font-size:12px;color:var(--text2);margin-top:4px;}
+.log-omschrijving{font-size:13px;color:var(--text2);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);line-height:1.5;}
+.log-werkzaamheden{font-size:13px;color:var(--accent);margin-top:5px;line-height:1.5;}
+
+/* VAK BLOK LOG */
+.vak-blok-log{background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.2);border-radius:var(--radius);padding:13px 15px;margin-bottom:9px;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+.stat-card .val{font-size:22px;font-weight:600;font-family:'DM Mono',monospace;}
+.stat-card .lbl{font-size:12px;color:var(--text2);margin-top:3px;}
+
+/* SECTION TITLE */
+.section-title{font-size:11px;color:var(--text2);letter-spacing:.8px;text-transform:uppercase;margin:18px 0 9px;}
+
+/* PAUZE BANNER */
+.pauze-banner{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.25);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--orange);display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+
+/* VRIJ CODES */
+.vrij-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.vrij-btn{padding:14px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;text-align:center;transition:border-color .15s,transform .1s;}
+.vrij-btn:active{transform:scale(.96);}
+.vrij-btn .vb-code{font-size:12px;font-weight:600;margin-bottom:4px;}
+.vrij-btn .vb-naam{font-size:13px;color:var(--text2);}
+.vrij-btn.kleur-orange{border-color:rgba(245,166,35,.35);background:rgba(245,166,35,.07);}
+.vrij-btn.kleur-orange .vb-code{color:var(--orange);}
+.vrij-btn.kleur-red{border-color:rgba(232,85,85,.35);background:rgba(232,85,85,.07);}
+.vrij-btn.kleur-red .vb-code{color:var(--red);}
+.vrij-btn.kleur-purple{border-color:rgba(155,127,232,.35);background:rgba(155,127,232,.07);}
+.vrij-btn.kleur-purple .vb-code{color:var(--purple);}
+.vrij-btn.kleur-blue{border-color:rgba(61,155,233,.35);background:rgba(61,155,233,.07);}
+.vrij-btn.kleur-blue .vb-code{color:var(--accent);}
+.vrij-btn.kleur-teal{border-color:rgba(46,204,196,.35);background:rgba(46,204,196,.07);}
+.vrij-btn.kleur-teal .vb-code{color:var(--teal);}
+.vrij-btn.kleur-green{border-color:rgba(46,204,138,.35);background:rgba(46,204,138,.07);}
+.vrij-btn.kleur-green .vb-code{color:var(--green);}
+
+/* FILTER CHIPS */
+.filter-row{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:3px;flex-shrink:0;}
+.filter-row::-webkit-scrollbar{display:none;}
+.chip{padding:7px 13px;border-radius:20px;font-size:13px;font-weight:500;white-space:nowrap;cursor:pointer;background:var(--bg3);border:1px solid var(--border);color:var(--text2);transition:all .15s;}
+.chip.active{background:rgba(61,155,233,.15);color:var(--accent);border-color:rgba(61,155,233,.3);}
+
+/* WO ITEMS */
+.wo-item{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;gap:10px;}
+.wo-item .wo-name{font-size:14px;font-weight:500;}
+.wo-item .wo-omschrijving{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.4;}
+.wo-item .wo-monteurs{margin-top:5px;}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;margin-right:4px;margin-top:3px;}
+.badge-blue{background:rgba(61,155,233,.15);color:var(--accent);}
+.badge-gray{background:var(--bg3);color:var(--text3);}
+
+/* SETTINGS */
+.si{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;}
+.si .si-l{font-size:15px;font-weight:500;}
+.si .si-s{font-size:12px;color:var(--text2);margin-top:2px;}
+
+/* TABS */
+.tabbar{display:flex;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0;}
+.tab-item{flex:1;padding:12px 4px 18px;text-align:center;cursor:pointer;font-size:11px;color:var(--text3);transition:all .2s;position:relative;}
+.tab-item .ti{font-size:26px;display:block;margin-bottom:4px;transition:transform .2s;}
+.tab-item.active{color:var(--accent);font-weight:600;}
+.tab-item.active .ti{transform:scale(1.15);}
+.tab-item.active::before{content:'';position:absolute;top:-1px;left:20%;right:20%;height:3px;background:var(--accent);border-radius:0 0 3px 3px;}
+
+/* SYNC STATUS */
+.sync-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:8px 15px;border-radius:var(--radius-sm);margin-bottom:10px;}
+.sync-status.ok{background:rgba(46,204,138,.08);color:var(--green);border:1px solid rgba(46,204,138,.2);}
+.sync-status.err{background:rgba(232,85,85,.08);color:var(--red);border:1px solid rgba(232,85,85,.2);}
+.sync-status.busy{background:rgba(245,166,35,.08);color:var(--orange);border:1px solid rgba(245,166,35,.2);}
+
+/* TOAST */
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:40px;padding:9px 18px;font-size:14px;color:var(--text);opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:200;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:32px 20px;color:var(--text2);font-size:14px;}
+.empty-icon{font-size:32px;margin-bottom:10px;}
+
+/* MODAL OVERLAY */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150;display:flex;align-items:flex-end;}
+.modal-overlay.hidden{display:none;}
+.modal-sheet{background:var(--bg2);border-radius:20px 20px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;margin:0 auto;max-height:90vh;overflow-y:auto;}
+.modal-handle{width:40px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto 16px;}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:16px;}
+
+/* VAKANTIE PERIODE PREVIEW */
+.periode-preview{background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;font-size:13px;color:var(--orange);line-height:1.6;}
+.periode-preview strong{color:var(--text);font-size:14px;}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* VAKANTIE STATUS BADGES */
+.vak-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.vak-pending{background:rgba(245,166,35,.15);color:var(--orange);border:1px solid rgba(245,166,35,.3);}
+.vak-approved{background:rgba(46,204,138,.15);color:var(--green);border:1px solid rgba(46,204,138,.3);}
+.vak-rejected{background:rgba(232,85,85,.15);color:var(--red);border:1px solid rgba(232,85,85,.2);}
+
+/* VAKANTIE AANVRAAG KAARTEN */
+.vak-req-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.vak-req-card.pending{border-left:3px solid var(--orange);}
+.vak-req-card.approved{border-left:3px solid var(--green);}
+.vak-req-card.rejected{border-left:3px solid var(--red);opacity:.75;}
+.vak-reden{font-size:12px;color:var(--red);margin-top:5px;font-style:italic;}
+
+/* ═══════════════════════════════════════
+   IMPROVEMENT 1: DEFAULT VIEW INFO BANNER
+   ═══════════════════════════════════════ */
+.dag-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(61,155,233,.08);
+  border: 1px solid rgba(61,155,233,.2);
+  border-radius: var(--radius-sm);
+  padding: 10px 13px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--accent);
+  line-height: 1.5;
+}
+.dag-info-banner .dib-icon { font-size: 16px; flex-shrink: 0; }
+.dag-info-banner .dib-tekst { flex: 1; }
+.dag-info-banner strong { color: var(--text); font-weight: 600; }
+
+/* ═══════════════════════════════════════
+   IMPROVEMENT 2: EXPORT FORMAT TOGGLE
+   ═══════════════════════════════════════ */
+.export-format-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  margin-bottom: 12px;
+}
+.export-format-row .ef-label {
+  font-size: 13px;
+  color: var(--text2);
+  font-weight: 500;
+}
+.export-format-toggle {
+  display: flex;
+  gap: 0;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.eft-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.eft-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════
+   IMPROVEMENT 3: IMAGE UPLOAD IN TIJDBLOK
+   ═══════════════════════════════════════ */
+.img-upload-wrap {
+  margin-bottom: 10px;
+}
+.img-upload-label-row {
+  font-size: 11px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-bottom: 8px;
+}
+.img-upload-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg3);
+  border: 1px dashed var(--border2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color .15s;
+  font-size: 13px;
+  color: var(--text2);
+}
+.img-upload-trigger:active { border-color: var(--accent); }
+.img-upload-trigger .iut-icon { font-size: 18px; }
+.img-upload-input { display: none; }
+.img-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.img-thumb {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+}
+.img-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.img-thumb-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.65);
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+@media(prefers-color-scheme:light){
+  :root{--bg:#f4f6f9;--bg2:#fff;--bg3:#eef1f5;--surface:#fff;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.14);--text:#111827;--text2:#6b7280;--text3:#9ca3af;--accent:#1d6fb5;--green:#16a059;--orange:#d97706;--red:#dc2626;--purple:#7c3aed;--teal:#0d9488;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== START / ROL KEUZE ===== -->
+<div id="screen-start" class="screen active">
+  <div class="logo-wrap">
+    <div class="logo-icon">🔧</div>
+    <h1>Urenregistratie</h1>
+    <p>Selecteer je rol om in te loggen</p>
+    <div class="sync-bar">
+      <div class="sync-dot" id="sync-indicator"></div>
+      <span id="sync-label">Verbinding controleren…</span>
+    </div>
+  </div>
+  <div class="role-grid">
+    <div class="role-card" onclick="showUserList('monteur')">
+      <div class="rc-icon">👷</div>
+      <div class="rc-label">Monteur</div>
+      <div class="rc-sub">Uren bijhouden</div>
+    </div>
+    <div class="role-card" onclick="showUserList('medewerker')">
+      <div class="rc-icon">💼</div>
+      <div class="rc-label">Medewerker</div>
+      <div class="rc-sub">Werkorders & export</div>
+    </div>
+    <div class="role-card full" onclick="openPin('admin',null)">
+      <div class="rc-icon">⚙️</div>
+      <div class="rc-label">Beheerder</div>
+      <div class="rc-sub">Gebruikers, codes & volledig beheer</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== USER LIST ===== -->
+<div id="screen-userlist" class="screen">
+  <div class="topbar">
+    <div>
+      <div class="topbar-sub" id="ul-sub">Monteurs</div>
+      <h1 id="ul-title">Kies jouw naam</h1>
+    </div>
+    <div class="icon-btn" onclick="showScreen('screen-start')">←</div>
+  </div>
+  <div class="body" id="ul-list"></div>
+</div>
+
+<!-- ===== PIN ===== -->
+<div id="screen-pin" class="screen">
+  <div class="pin-header">
+    <div class="pin-avatar" id="pin-avatar">AB</div>
+    <h2 id="pin-title">Voer PIN in</h2>
+    <p id="pin-sub">4-cijferige pincode</p>
+  </div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+  <div class="pin-grid">
+    <div class="pin-key" onclick="pinKey('1')">1</div>
+    <div class="pin-key" onclick="pinKey('2')">2<div class="sub">ABC</div></div>
+    <div class="pin-key" onclick="pinKey('3')">3<div class="sub">DEF</div></div>
+    <div class="pin-key" onclick="pinKey('4')">4<div class="sub">GHI</div></div>
+    <div class="pin-key" onclick="pinKey('5')">5<div class="sub">JKL</div></div>
+    <div class="pin-key" onclick="pinKey('6')">6<div class="sub">MNO</div></div>
+    <div class="pin-key" onclick="pinKey('7')">7<div class="sub">PQRS</div></div>
+    <div class="pin-key" onclick="pinKey('8')">8<div class="sub">TUV</div></div>
+    <div class="pin-key" onclick="pinKey('9')">9<div class="sub">WXYZ</div></div>
+    <div class="pin-key empty"></div>
+    <div class="pin-key" onclick="pinKey('0')">0</div>
+    <div class="pin-key del" onclick="pinDel()">⌫</div>
+  </div>
+  <div style="padding:0 20px 20px;">
+    <button class="btn btn-ghost" onclick="pinBack()">← Terug</button>
+  </div>
+</div>
+
+<!-- ===== MONTEUR DASHBOARD ===== -->
+<div id="screen-monteur" class="screen">
+  <div class="dash-header">
+    <div class="greeting" id="m-greeting">Goedemorgen</div>
+    <h2 id="m-name">Naam</h2>
+    <div class="ddate" id="m-date"></div>
+    <div class="role-pill rp-m">👷 Monteur</div>
+  </div>
+  <div id="m-status-pill" class="status-pill idle" style="display:none;">
+    <span class="sdot" id="m-dot"></span>
+    <span id="m-status-txt">Niet ingeklokt</span>
+  </div>
+  <div style="display:none;">
+    <div id="m-timer"></div>
+    <div id="m-proj-name"></div>
+  </div>
+  <div class="body" id="m-body"></div>
+  <div class="tabbar">
+    <div class="tab-item active" id="mtab-klok" onclick="mTab('klok')"><span class="ti">⏱</span>Klok</div>
+    <div class="tab-item" id="mtab-uren" onclick="mTab('uren')"><span class="ti">📋</span>Mijn uren</div>
+    <div class="tab-item" id="mtab-vak" onclick="mTab('vak')"><span class="ti">🏖</span>Vakantie</div>
+    <div class="tab-item" id="mtab-inst" onclick="mTab('inst')"><span class="ti">⚙️</span>Instellingen</div>
+  </div>
+</div>
+
+<!-- ===== MEDEWERKER DASHBOARD ===== -->
+<div id="screen-medew" class="screen">
+  <div class="dash-header">
+    <div class="greeting" id="mw-greeting">Goedemorgen</div>
+    <h2 id="mw-name">Naam</h2>
+    <div class="ddate" id="mw-date"></div>
+    <div class="role-pill rp-mw">💼 Medewerker</div>
+  </div>
+  <div class="body" id="mw-body"></div>
+  <div class="tabbar">
+    <div class="tab-item active" id="mwtab-wo" onclick="mwTab('wo')"><span class="ti">📁</span>Werkorders</div>
+    <div class="tab-item" id="mwtab-werkz" onclick="mwTab('werkz')"><span class="ti">✏️</span>Werkzaamh.</div>
+    <div class="tab-item" id="mwtab-uren" onclick="mwTab('uren')"><span class="ti">📊</span>Overzicht</div>
+    <div class="tab-item" id="mwtab-vak" onclick="mwTab('vak')"><span class="ti">🏖</span><span id="mwtab-vak-label">Vakantie</span></div>
+    <div class="tab-item" id="mwtab-export" onclick="mwTab('export')"><span class="ti">📥</span>Export</div>
+    <div class="tab-item" id="mwtab-inst" onclick="mwTab('inst')"><span class="ti">⚙️</span>Inst.</div>
+  </div>
+</div>
+
+<!-- ===== ADMIN DASHBOARD ===== -->
+<div id="screen-admin" class="screen">
+  <div class="topbar">
+    <div><div class="topbar-sub">Beheerpaneel</div><h1>Admin</h1></div>
+    <div class="icon-btn" onclick="uitloggen()">✕</div>
+  </div>
+  <div class="body" id="adm-body"></div>
+</div>
+
+<!-- ===== MODAL: Uren aanpassen (admin) ===== -->
+<div class="modal-overlay hidden" id="modal-edit-reg">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="mer-title">Registratie aanpassen</div>
+    <div id="mer-info" style="font-size:13px;color:var(--text2);margin-bottom:14px;"></div>
+    <div class="card-label">Monteur</div>
+    <select class="select-field" id="mer-monteur"></select>
+    <div class="card-label">Type</div>
+    <select class="select-field" id="mer-type" onchange="merTypeChange()">
+      <option value="werk">Werkorder</option>
+      <option value="vrij">Vrij / intern</option>
+    </select>
+    <select class="select-field" id="mer-wo" style="margin-top:-4px;"></select>
+    <select class="select-field" id="mer-vrij" style="display:none;margin-top:-4px;" onchange="merVrijCodeChange()"></select>
+    <div id="mer-vakblok-velden" style="display:none;">
+      <div style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:var(--radius-sm);padding:10px 13px;font-size:13px;color:var(--orange);margin-bottom:12px;">
+        🏖 Vakantieblok — weekenden worden automatisch overgeslagen
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div><div class="card-label">Van (eerste werkdag)</div><input class="input-field" type="date" id="mer-vak-van" onchange="merVakPreview()" /></div>
+        <div><div class="card-label">Tot (laatste werkdag)</div><input class="input-field" type="date" id="mer-vak-tot" onchange="merVakPreview()" /></div>
+      </div>
+      <div id="mer-vak-preview" style="display:none;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:var(--radius-sm);padding:10px 13px;font-size:13px;color:var(--orange);margin-bottom:10px;line-height:1.5;"></div>
+    </div>
+    <div id="mer-datum-velden">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><div class="card-label">Datum</div><input class="input-field" type="date" id="mer-datum" /></div>
+        <div></div>
+        <div><div class="card-label">Starttijd</div><input class="input-field" type="time" id="mer-start" /></div>
+        <div><div class="card-label">Eindtijd</div><input class="input-field" type="time" id="mer-eind" /></div>
+      </div>
+      <div class="card-label" style="margin-top:4px;">Pauze (minuten)</div>
+      <input class="input-field" type="number" id="mer-pauze" min="0" max="480" placeholder="0" />
+    </div>
+    <div class="card-label">Toelichting / werkzaamheden</div>
+    <textarea class="textarea-field" id="mer-werkz" placeholder="Optioneel" rows="3"></textarea>
+    <button class="btn btn-primary" onclick="merOpslaan()">✓ Wijzigingen opslaan</button>
+    <button class="btn btn-ghost" style="color:var(--red);" onclick="merVerwijder()">🗑 Registratie verwijderen</button>
+    <button class="btn btn-ghost" onclick="closeModal('modal-edit-reg')">Annuleren</button>
+  </div>
+</div>
+
+<!-- ===== MODAL: Export periode kiezen ===== -->
+<div class="modal-overlay hidden" id="modal-export">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Export instellen</div>
+
+    <!-- IMPROVEMENT 2: Export formaat toggle (per dag / per week) -->
+    <div class="export-format-row">
+      <span class="ef-label">Export formaat</span>
+      <div class="export-format-toggle">
+        <button class="eft-btn active" id="eft-dag" onclick="expSetFormaat('dag')">Per dag</button>
+        <button class="eft-btn" id="eft-week" onclick="expSetFormaat('week')">Per week</button>
+      </div>
+    </div>
+    <!-- END IMPROVEMENT 2 -->
+
+    <div class="card-label">Periode</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <button class="btn btn-sm btn-ghost exp-type-btn" id="expt-week" onclick="expSetType('week')">Week</button>
+      <button class="btn btn-sm btn-ghost exp-type-btn" id="expt-maand" onclick="expSetType('maand')">Maand</button>
+      <button class="btn btn-sm btn-ghost exp-type-btn" id="expt-jaar" onclick="expSetType('jaar')">Jaar</button>
+      <button class="btn btn-sm btn-ghost exp-type-btn" id="expt-alles" onclick="expSetType('alles')">Alles</button>
+    </div>
+    <div id="exp-week-kiezer"><div class="card-label">Kies week</div><select class="select-field" id="exp-week-sel" onchange="expUpdatePreview()"></select></div>
+    <div id="exp-maand-kiezer" style="display:none;"><div class="card-label">Kies maand</div><select class="select-field" id="exp-maand-sel" onchange="expUpdatePreview()"></select></div>
+    <div id="exp-jaar-kiezer" style="display:none;"><div class="card-label">Kies jaar</div><select class="select-field" id="exp-jaar-sel" onchange="expUpdatePreview()"></select></div>
+    <div class="card-label">Monteur</div>
+    <select class="select-field" id="exp-monteur-sel" onchange="expUpdatePreview()">
+      <option value="-1">Alle monteurs</option>
+    </select>
+    <div id="exp-preview" style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;margin-bottom:14px;"></div>
+    <button class="btn btn-success" onclick="exportPeriode()">📥 CSV downloaden</button>
+    <button class="btn btn-ghost" onclick="closeModal('modal-export')">Annuleren</button>
+  </div>
+</div>
+
+<!-- ===== MODAL: Werkzaamheden invullen bij uitchecken ===== -->
+<div class="modal-overlay hidden" id="modal-uitcheck">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Uitchecken — werkzaamheden</div>
+    <div id="modal-wo-info" style="font-size:14px;color:var(--text2);margin-bottom:12px;"></div>
+    <div id="modal-omschrijving-toon" style="display:none;">
+      <div class="card-label">Omschrijving vanuit kantoor</div>
+      <div id="modal-omschrijving-tekst" style="font-size:14px;color:var(--text);background:var(--bg3);padding:10px 12px;border-radius:var(--radius-sm);margin-bottom:12px;line-height:1.5;"></div>
+    </div>
+    <div class="card-label">Jouw werkzaamheden (verplicht)</div>
+    <textarea class="textarea-field" id="modal-werkz" placeholder="Beschrijf kort wat je hebt gedaan…" rows="4"></textarea>
+    <button class="btn btn-danger" onclick="confirmUitchecken()">⏹ Uitchecken & opslaan</button>
+    <button class="btn btn-ghost" onclick="closeModal('modal-uitcheck')">Annuleren</button>
+  </div>
+</div>
+
+<!-- ===== MODAL: Vrij / intern registratie ===== -->
+<div class="modal-overlay hidden" id="modal-vrij-reg">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="vrij-modal-titel">Registratie</div>
+    <div id="vrij-modal-badge" style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:14px;"></div>
+    <div id="vrij-meerdag-blok" style="display:none;">
+      <div style="background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.2);border-radius:var(--radius-sm);padding:10px 13px;font-size:13px;color:var(--orange);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+        🏖️ <span>Kies een van- en tot-datum voor meerdere dagen</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <div class="card-label">Van datum</div>
+          <input class="input-field" type="date" id="vrij-van-datum" onchange="vrijUpdatePreview()" />
+        </div>
+        <div>
+          <div class="card-label">Tot datum</div>
+          <input class="input-field" type="date" id="vrij-tot-datum" onchange="vrijUpdatePreview()" />
+        </div>
+      </div>
+      <div id="vrij-periode-preview" class="periode-preview" style="display:none;"></div>
+    </div>
+    <div id="vrij-enkeldag-blok">
+      <div class="card-label">Datum</div>
+      <input class="input-field" type="date" id="vrij-datum" />
+      <div class="card-label">Registratievorm</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div id="vrij-keuze-dag" class="card" style="cursor:pointer;text-align:center;padding:14px 10px;border:2px solid var(--accent);background:rgba(61,155,233,.08);" onclick="vrijKeuze('dag')">
+          <div style="font-size:20px;margin-bottom:4px;">📅</div>
+          <div style="font-size:13px;font-weight:600;">Hele dag</div>
+        </div>
+        <div id="vrij-keuze-blok" class="card" style="cursor:pointer;text-align:center;padding:14px 10px;" onclick="vrijKeuze('blok')">
+          <div style="font-size:20px;margin-bottom:4px;">🕐</div>
+          <div style="font-size:13px;font-weight:600;">Tijdsblok</div>
+        </div>
+      </div>
+      <div id="vrij-tijdblok" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div><div class="card-label">Van</div><input class="input-field" type="time" id="vrij-start" /></div>
+          <div><div class="card-label">Tot</div><input class="input-field" type="time" id="vrij-eind" /></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-label">Toelichting (optioneel)</div>
+    <textarea class="textarea-field" id="vrij-toelichting" placeholder="Optionele opmerking…" rows="2"></textarea>
+    <button class="btn btn-primary" onclick="vrijOpslaanConfirm()">✓ Opslaan</button>
+    <button class="btn btn-ghost" onclick="closeModal('modal-vrij-reg')">Annuleren</button>
+  </div>
+</div>
+
+<!-- MODAL: Vakantie aanvragen (monteur) -->
+<div class="modal-overlay hidden" id="modal-vakantie">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🏖 Vakantie aanvragen</div>
+
+    <!-- Startdatum -->
+    <div class="card-label">Startdatum</div>
+    <input class="input-field" type="date" id="vak-van" onchange="vakUpdatePreview()" />
+
+    <!-- Einddatum -->
+    <div class="card-label">Einddatum</div>
+    <input class="input-field" type="date" id="vak-tot" onchange="vakUpdatePreview()" />
+
+    <!-- Verlofsoort -->
+    <div class="card-label">Verlofsoort</div>
+    <select class="select-field" id="vak-soort">
+      <option value="VAK">🏖 Vakantie</option>
+      <option value="ZIEK">🤒 Ziekteverlof</option>
+      <option value="FEEST">🎉 Feestdag</option>
+      <option value="VERG">💼 Interne vergadering</option>
+      <option value="CURSUS">📚 Opleiding / cursus</option>
+    </select>
+
+    <!-- Werkdagen teller -->
+    <div id="vak-dagen-teller" style="display:none;background:rgba(46,204,138,.08);border:1px solid rgba(46,204,138,.25);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:4px;">Op te nemen vakantiedagen</div>
+      <div style="font-size:22px;font-weight:600;font-family:'DM Mono',monospace;color:var(--green);" id="vak-dagen-getal">0</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px;" id="vak-dagen-periode"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">Weekenddagen tellen niet mee als vakantiedagen.</div>
+    </div>
+
+    <!-- Geen werkdagen waarschuwing -->
+    <div id="vak-weekend-warning" style="display:none;background:rgba(155,127,232,.08);border:1px solid rgba(155,127,232,.2);border-radius:var(--radius-sm);padding:10px 13px;font-size:13px;color:var(--purple);margin-bottom:10px;"></div>
+
+    <!-- Toelichting -->
+    <div class="card-label">Toelichting (optioneel)</div>
+    <textarea class="textarea-field" id="vak-toelichting" placeholder="Optionele toelichting voor de beheerder…" rows="2"></textarea>
+
+    <button class="btn btn-warning" id="vak-indienen-btn" onclick="vakAanvragen()">📤 Aanvraag indienen</button>
+    <button class="btn btn-ghost" onclick="closeModal('modal-vakantie')">Annuleren</button>
+  </div>
+</div>
+
+<!-- MODAL: Vakantie afwijzen (admin/medewerker) -->
+<div class="modal-overlay hidden" id="modal-vak-reject">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Vakantie afwijzen</div>
+    <div id="vak-reject-info" style="font-size:13px;color:var(--text2);margin-bottom:14px;"></div>
+    <div class="card-label">Reden (optioneel)</div>
+    <textarea class="textarea-field" id="vak-reject-reden" placeholder="Reden voor afwijzing…" rows="3"></textarea>
+    <button class="btn btn-danger" onclick="vakRejectConfirm()">✕ Afwijzen</button>
+    <button class="btn btn-ghost" onclick="closeModal('modal-vak-reject')">Annuleren</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIGURATIE
+// ═══════════════════════════════════════════════
+const CONFIG = {
+  apiUrl: './api.php',
+  apiKey: 'VERANDER_DIT_NAAR_EIGEN_GEHEIME_SLEUTEL_123',
+  syncInterval: 30000,
+  offlineMode: false,
+  vapidPublicKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
+};
+const ADMIN_PIN = '6194';
+const MEERDAAGSE_CODES = ['VAK', 'VAKANTIE'];
+
+let app = { monteurs:[], medewerkers:[], werkorders:[], vrijCodes:[], registraties:[], vakantieAanvragen:[], geslotenWeken:[], pushSubscriptions:[] };
+let session = { rol:null, idx:null };
+let pinCtx = null;
+let timerInt = null;
+let syncInt = null;
+let mActiveTab = 'klok';
+let mwActiveTab = 'wo';
+let mwVakFilter = 'pending';
+// Month for the medewerker vacation overview (format: 'YYYY-MM')
+let mwVakMaand = new Date().toISOString().slice(0,7);
+let mwUrenFilter = -1;
+let mwUrenWeek = '';
+let mwExportWeek = '';
+let mwExportMonteur = -1;
+let admTab = 'monteurs';
+let pendingUitcheck = null;
+let pendingRejectId = null;
+let isSyncing = false;
+let lastSync = null;
+const LS_KEY = 'uren_v4_vak';
+
+// IMPROVEMENT 2: export formaat state (default: 'dag')
+let expFormaat = 'dag';
+// Dag filter for per-dag export (0=alle, 1=ma ... 7=zo)
+let mwExportDag = 0;
+
+const AV = ['av-blue','av-purple','av-green','av-orange'];
+const KLEUREN = ['orange','red','purple','blue','teal','green'];
+
+// ═══════════════════════ SYNC ═══════════════════════
+
+function syncIndicator(state, msg) {
+  const dot = document.getElementById('sync-indicator');
+  const lbl = document.getElementById('sync-label');
+  if (!dot) return;
+  dot.className = 'sync-dot ' + state;
+  if (lbl) lbl.textContent = msg;
+}
+
+async function apiCall(action, body=null) {
+  const url = CONFIG.apiUrl + '?action=' + action;
+  const opts = {
+    method: body ? 'POST' : 'GET',
+    headers: { 'Content-Type': 'application/json', 'X-API-Key': CONFIG.apiKey }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+async function syncLoad() {
+  if (CONFIG.offlineMode) { loadLocal(); return; }
+  syncIndicator('busy', 'Verbinden met server…');
+  try {
+    const data = await apiCall('load');
+    if (data && data.monteurs !== undefined) {
+      app = data;
+      if (!app.vakantieAanvragen) app.vakantieAanvragen = [];
+      if (!app.geslotenWeken) app.geslotenWeken = [];
+      ensureDefaultMedewerkers();
+      cleanupTestData();
+      saveLocal();
+      lastSync = new Date();
+      syncIndicator('ok', 'Gesynchroniseerd ' + lastSync.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}));
+    }
+  } catch(e) {
+    loadLocal();
+    syncIndicator('err', 'Offline — lokale data geladen');
+  }
+}
+
+async function syncSave() {
+  if (CONFIG.offlineMode) { saveLocal(); return; }
+  saveLocal();
+  if (isSyncing) return;
+  isSyncing = true;
+  try {
+    await apiCall('save', app);
+    lastSync = new Date();
+    syncIndicator('ok', 'Opgeslagen ' + lastSync.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}));
+  } catch(e) {
+    syncIndicator('err', 'Offline — lokaal opgeslagen');
+  }
+  isSyncing = false;
+}
+
+function ensureDefaultMedewerkers() {
+  const verplicht = [
+    {naam:'Gijs Polman',      pin:'7253'},
+    {naam:'Jaco Verweij',     pin:'4619'},
+    {naam:'Mike van Mameren', pin:'3651'},
+    {naam:'Karin van Oort',   pin:'8027'},
+  ];
+  if (!app.medewerkers) app.medewerkers = [];
+  verplicht.forEach(v => {
+    if (!app.medewerkers.find(m => m.naam === v.naam)) {
+      app.medewerkers.push(v);
+    }
+  });
+}
+
+function saveLocal() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(app)); } catch(e){}
+}
+function loadLocal() {
+  try {
+    const d = localStorage.getItem(LS_KEY);
+    if (d) { app = JSON.parse(d); if (!app.vakantieAanvragen) app.vakantieAanvragen = []; if (!app.geslotenWeken) app.geslotenWeken = []; if (!app.pushSubscriptions) app.pushSubscriptions = []; ensureDefaultMedewerkers(); cleanupTestData(); } else { setDefaults(); }
+  } catch(e) { setDefaults(); }
+}
+
+function cleanupTestData() {
+  const aanvraagDelen = [
+    v => v.van === '2026-04-13' && v.tot === '2026-04-24',
+    v => v.van === '2026-04-17' && v.tot === '2026-04-24',
+    // Antoine Esmeijer test aanvraag 20 apr – 1 mei 2026
+    v => v.van === '2026-04-20' && v.tot === '2026-05-01',
+  ];
+  app.vakantieAanvragen = app.vakantieAanvragen.filter(v => !aanvraagDelen.some(fn => fn(v)));
+
+  // Migrate PINs — update any stored accounts to the correct PINs
+  const monteurPins = {
+    'Antoine Esmeijer':'3847','Daan Kastelein':'5219','Eddie Smits':'7463',
+    'Frank Voorend':'2981','Herman Ponssen':'6534','Jur Hekman':'4872',
+    'Marc de Lang':'9316','Marcel de Ruiter':'1584','Mathé van Arkel':'7029',
+    'Mike van Mameren':'3651','Pieter van Mourik':'8247','Roy Streef':'5093',
+    'Stephan den Drijver':'4718','Sylvester van Stuivenberg':'6382','Teun Zaal':'9154',
+    'Teus Zuurmond':'2763','Thom van de Wetering':'8496','Tim van Zoest':'1372',
+    'Wim den Besten':'5841'
+  };
+  const medewerkerPins = {
+    'Gijs Polman':'7253','Jaco Verweij':'4619','Mike van Mameren':'3651','Karin van Oort':'8027'
+  };
+  (app.monteurs||[]).forEach(m => { if (monteurPins[m.naam]) m.pin = monteurPins[m.naam]; });
+  (app.medewerkers||[]).forEach(m => { if (medewerkerPins[m.naam]) m.pin = medewerkerPins[m.naam]; });
+}
+
+function setDefaults() {
+  app = {
+    monteurs:[
+      {naam:'Antoine Esmeijer',pin:'3847'},
+      {naam:'Daan Kastelein',pin:'5219'},
+      {naam:'Eddie Smits',pin:'7463'},
+      {naam:'Frank Voorend',pin:'2981'},
+      {naam:'Herman Ponssen',pin:'6534'},
+      {naam:'Jur Hekman',pin:'4872'},
+      {naam:'Marc de Lang',pin:'9316'},
+      {naam:'Marcel de Ruiter',pin:'1584'},
+      {naam:'Mathé van Arkel',pin:'7029'},
+      {naam:'Mike van Mameren',pin:'3651'},
+      {naam:'Pieter van Mourik',pin:'8247'},
+      {naam:'Roy Streef',pin:'5093'},
+      {naam:'Stephan den Drijver',pin:'4718'},
+      {naam:'Sylvester van Stuivenberg',pin:'6382'},
+      {naam:'Teun Zaal',pin:'9154'},
+      {naam:'Teus Zuurmond',pin:'2763'},
+      {naam:'Thom van de Wetering',pin:'8496'},
+      {naam:'Tim van Zoest',pin:'1372'},
+      {naam:'Wim den Besten',pin:'5841'},
+    ], medewerkers:[
+      {naam:'Gijs Polman',pin:'7253'},
+      {naam:'Jaco Verweij',pin:'4619'},
+      {naam:'Mike van Mameren',pin:'3651'},
+      {naam:'Karin van Oort',pin:'8027'},
+    ],
+    werkorders:[
+      {naam:'WO-2024-001 Bakkerij Noord', omschrijving:'Jaarlijks onderhoud koelinstallaties', monteurIdxs:[]},
+      {naam:'WO-2024-002 Kantoor Centrum', omschrijving:'', monteurIdxs:[]},
+    ],
+    vrijCodes:[
+      {code:'VAK',naam:'Vakantie',kleur:'orange'},
+      {code:'ZIEK',naam:'Ziekteverlof',kleur:'red'},
+      {code:'FEEST',naam:'Feestdag',kleur:'purple'},
+      {code:'VERG',naam:'Interne vergadering',kleur:'blue'},
+      {code:'CURSUS',naam:'Opleiding / cursus',kleur:'teal'},
+    ],
+    registraties:[],
+    vakantieAanvragen:[],
+    geslotenWeken:[],
+    pushSubscriptions:[]
+  };
+}
+
+function startAutoSync() {
+  clearInterval(syncInt);
+  if (!CONFIG.offlineMode) {
+    syncInt = setInterval(async () => {
+      if (!isSyncing) {
+        try {
+          const data = await apiCall('load');
+          if (data && data.monteurs !== undefined) {
+            const actief = app.registraties.filter(r => !r.eind);
+            app = data;
+            if (!app.vakantieAanvragen) app.vakantieAanvragen = [];
+            if (!app.geslotenWeken) app.geslotenWeken = [];
+            ensureDefaultMedewerkers();
+            cleanupTestData();
+            actief.forEach(a => {
+              if (!app.registraties.find(r => r._id === a._id)) app.registraties.push(a);
+            });
+            saveLocal();
+            lastSync = new Date();
+            syncIndicator('ok', 'Gesynchroniseerd ' + lastSync.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}));
+          }
+        } catch(e) { syncIndicator('err', 'Offline'); }
+      }
+    }, CONFIG.syncInterval);
+  }
+}
+
+// ═══════════════════════ NAV ═══════════════════════
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+// ═══════════════════════ USER LIST ═══════════════════════
+
+function showUserList(rol) {
+  const list = document.getElementById('ul-list');
+  const users = rol === 'monteur' ? app.monteurs : app.medewerkers;
+  document.getElementById('ul-sub').textContent = rol === 'monteur' ? 'Monteurs' : 'Medewerkers';
+  list.innerHTML = '';
+  if (users.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">${rol==='monteur'?'👷':'💼'}</div><p>Nog geen ${rol==='monteur'?'monteurs':'medewerkers'} aangemaakt.</p></div>`;
+    showScreen('screen-userlist'); return;
+  }
+  users.forEach((u, i) => {
+    const reg = rol === 'monteur' ? getActief(i) : null;
+    const isPauze = reg && isPauzeActief(reg);
+    const dot = reg ? (isPauze ? 'pauze' : 'active') : '';
+    const stxt = reg ? (isPauze ? 'Pauze' : 'Ingeklokt') : (rol==='monteur'?'Uitgestempeld':'');
+    const div = document.createElement('div');
+    div.className = 'user-item';
+    div.onclick = () => openPin(rol, i);
+    div.innerHTML = `<div class="avatar ${AV[i%AV.length]}">${initials(u.naam)}</div>
+      <div class="user-info"><div class="uname">${u.naam}</div>
+      <div class="usub"><span class="sdot ${dot}"></span>${stxt}</div></div>
+      <div class="chevron">›</div>`;
+    list.appendChild(div);
+  });
+  showScreen('screen-userlist');
+}
+
+// ═══════════════════════ PIN ═══════════════════════
+
+let pinBuf = '';
+function openPin(rol, idx) {
+  pinBuf = ''; pinCtx = {rol, idx};
+  const isAdmin = rol === 'admin';
+  const naam = isAdmin ? 'Admin' : rol==='medewerker' ? app.medewerkers[idx]?.naam : app.monteurs[idx]?.naam;
+  document.getElementById('pin-avatar').textContent = isAdmin ? '⚙️' : initials(naam||'');
+  document.getElementById('pin-avatar').className = 'pin-avatar ' + (isAdmin?'':rol==='medewerker'?'av-purple':'av-blue');
+  document.getElementById('pin-title').textContent = naam || 'Admin';
+  document.getElementById('pin-error').textContent = '';
+  updatePinDots(); showScreen('screen-pin');
+}
+function pinBack() {
+  if (pinCtx.rol === 'admin') showScreen('screen-start');
+  else showUserList(pinCtx.rol);
+}
+function pinKey(d) { if (pinBuf.length >= 4) return; pinBuf += d; updatePinDots(); if (pinBuf.length === 4) setTimeout(checkPin, 150); }
+function pinDel() { pinBuf = pinBuf.slice(0,-1); updatePinDots(); document.getElementById('pin-error').textContent = ''; document.querySelectorAll('.pin-dot').forEach(d=>d.classList.remove('error')); }
+function updatePinDots() { for(let i=0;i<4;i++){const d=document.getElementById('pd'+i);d.classList.toggle('filled',i<pinBuf.length);d.classList.remove('error');} }
+function checkPin() {
+  const {rol, idx} = pinCtx; let ok = false;
+  if (rol==='admin') ok = pinBuf === ADMIN_PIN;
+  else if (rol==='monteur') ok = pinBuf === app.monteurs[idx]?.pin;
+  else ok = pinBuf === app.medewerkers[idx]?.pin;
+  if (ok) {
+    session = {rol, idx};
+    if (rol==='admin') { renderAdmin(); showScreen('screen-admin'); }
+    else if (rol==='monteur') openMonteurDash();
+    else openMedewerkerDash();
+  } else {
+    document.querySelectorAll('.pin-dot').forEach(d=>{d.classList.remove('filled');d.classList.add('error');});
+    document.getElementById('pin-error').textContent = 'Onjuiste PIN';
+    pinBuf = '';
+    setTimeout(()=>{document.querySelectorAll('.pin-dot').forEach(d=>d.classList.remove('error'));document.getElementById('pin-error').textContent='';}, 1200);
+  }
+}
+
+// ═══════════════════════ PERIODE FILTER HELPERS ═══════════════════════
+
+function periodeRange(periode, vanStr, totStr) {
+  const nu = new Date();
+  const d0 = (d) => { const x=new Date(d); x.setHours(0,0,0,0); return x; };
+  const d1 = (d) => { const x=new Date(d); x.setHours(23,59,59,999); return x; };
+  switch(periode) {
+    case 'vandaag': return [d0(nu).getTime(), d1(nu).getTime()];
+    case 'week': {
+      const ma=new Date(nu); ma.setDate(nu.getDate()-((nu.getDay()+6)%7)); ma.setHours(0,0,0,0);
+      const zo=new Date(ma); zo.setDate(ma.getDate()+6); zo.setHours(23,59,59,999);
+      return [ma.getTime(), zo.getTime()];
+    }
+    case 'vorigeweek': {
+      const ma=new Date(nu); ma.setDate(nu.getDate()-((nu.getDay()+6)%7)-7); ma.setHours(0,0,0,0);
+      const zo=new Date(ma); zo.setDate(ma.getDate()+6); zo.setHours(23,59,59,999);
+      return [ma.getTime(), zo.getTime()];
+    }
+    case 'maand': {
+      const van=new Date(nu.getFullYear(),nu.getMonth(),1);
+      const tot=new Date(nu.getFullYear(),nu.getMonth()+1,0,23,59,59,999);
+      return [van.getTime(), tot.getTime()];
+    }
+    case 'vorigemaand': {
+      const van=new Date(nu.getFullYear(),nu.getMonth()-1,1);
+      const tot=new Date(nu.getFullYear(),nu.getMonth(),0,23,59,59,999);
+      return [van.getTime(), tot.getTime()];
+    }
+    case 'aangepast': {
+      if (!vanStr||!totStr) return [0, Date.now()];
+      return [d0(vanStr).getTime(), d1(totStr).getTime()];
+    }
+    default: return [0, Date.now()];
+  }
+}
+
+function periodeFilterHTML(idPrefix, activePeriode, showMonteur=false, activeMonteur=-1) {
+  const periodes = [
+    {k:'vandaag',l:'Vandaag'},{k:'week',l:'Deze week'},{k:'vorigeweek',l:'Vorige week'},
+    {k:'maand',l:'Deze maand'},{k:'vorigemaand',l:'Vorige maand'},{k:'aangepast',l:'Aangepast'},
+  ];
+  const chips = periodes.map(p =>
+    `<div class="chip ${activePeriode===p.k?'active':''}" onclick="${idPrefix}SetPeriode('${p.k}')">${p.l}</div>`
+  ).join('');
+  const aangepast = activePeriode==='aangepast' ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+      <div><div class="card-label">Van</div><input class="input-field" type="date" id="${idPrefix}-van" onchange="${idPrefix}Refresh()" /></div>
+      <div><div class="card-label">Tot</div><input class="input-field" type="date" id="${idPrefix}-tot" onchange="${idPrefix}Refresh()" /></div>
+    </div>` : '';
+  const monteurSel = showMonteur ? `
+    <div class="card-label" style="margin-top:10px;">Monteur</div>
+    <select class="select-field" id="${idPrefix}-monteur" onchange="${idPrefix}Refresh()">
+      <option value="-1">Alle monteurs</option>
+      ${app.monteurs.map((m,i)=>`<option value="${i}" ${activeMonteur===i?'selected':''}>${m.naam}</option>`).join('')}
+    </select>` : '';
+  return `<div class="filter-row" style="flex-wrap:wrap;gap:6px;margin-bottom:0;">${chips}</div>${aangepast}${monteurSel}`;
+}
+
+// ═══════════════════════ VAKANTIE LOGICA ═══════════════════════
+
+function isWerkdag(d) { const dag=new Date(d).getDay(); return dag>=1&&dag<=5; }
+
+function werkdagenInRange(vanStr, totStr) {
+  const days=[]; let cur=new Date(vanStr+'T12:00');
+  const tot=new Date(totStr+'T12:00');
+  while(cur<=tot){ if(isWerkdag(cur)) days.push(cur.toISOString().slice(0,10)); cur=new Date(cur.getTime()+86400000); }
+  return days;
+}
+
+function weekenddagenInRange(vanStr, totStr) {
+  let count=0; let cur=new Date(vanStr+'T12:00');
+  const tot=new Date(totStr+'T12:00');
+  while(cur<=tot){ if(!isWerkdag(cur)) count++; cur=new Date(cur.getTime()+86400000); }
+  return count;
+}
+
+function getVakantieAanvragen(mIdx=null, status=null) {
+  return (app.vakantieAanvragen||[]).filter(v=>{
+    if(mIdx!==null && v.mIdx!==mIdx) return false;
+    if(status!==null && v.status!==status) return false;
+    return true;
+  }).sort((a,b)=>a.van.localeCompare(b.van));
+}
+
+function vakBadgeHTML(status) {
+  const map={pending:'vak-pending',approved:'vak-approved',rejected:'vak-rejected'};
+  const lbl={pending:'⏳ In afwachting',approved:'✓ Goedgekeurd',rejected:'✕ Afgewezen'};
+  return `<span class="vak-badge ${map[status]||'vak-pending'}">${lbl[status]||status}</span>`;
+}
+
+function vakBlokCardHTML(aanvraag, showMonteur=false, showActions=false, showIntrek=false) {
+  const eersteWerkdag = werkdagenInRange(aanvraag.van, aanvraag.tot)[0] || aanvraag.van;
+  const laatsteWerkdag = werkdagenInRange(aanvraag.van, aanvraag.tot).slice(-1)[0] || aanvraag.tot;
+  const vanFmt = new Date(eersteWerkdag).toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'long'});
+  const totFmt = new Date(laatsteWerkdag).toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+  const isSameDay = eersteWerkdag === laatsteWerkdag;
+  const periode = isSameDay ? vanFmt : `${vanFmt} – ${totFmt}`;
+  const monteurNaam = showMonteur ? (app.monteurs[aanvraag.mIdx]?.naam||'?') : null;
+  const soortLabel = aanvraag.soortNaam || 'Vakantie';
+  const redenHTML = aanvraag.status==='rejected'&&aanvraag.reden ? `<div class="vak-reden">Reden: ${aanvraag.reden}</div>` : '';
+  const toelHTML = aanvraag.toelichting ? `<div style="font-size:12px;color:var(--text3);margin-top:3px;">💬 ${aanvraag.toelichting}</div>` : '';
+  const actieHTML = showActions&&aanvraag.status==='pending' ? `<div style="display:flex;gap:8px;margin-top:10px;">
+    <button class="btn btn-sm btn-success" onclick="vakApprove('${aanvraag._id}')">✓ Goedkeuren</button>
+    <button class="btn btn-sm btn-ghost" style="color:var(--red);" onclick="vakRejectOpen('${aanvraag._id}')">✕ Afwijzen</button>
+  </div>` : '';
+  const kanIntrekken = showIntrek && (aanvraag.status==='pending' || aanvraag.status==='approved');
+  const intrekHTML = kanIntrekken ? `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+    <div id="intrek-bevestig-${aanvraag._id}" style="display:none;background:rgba(232,85,85,.08);border:1px solid rgba(232,85,85,.25);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:8px;">
+      <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:4px;">Vakantie intrekken?</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">${aanvraag.status==='approved'?'Deze vakantie is al goedgekeurd. Intrekken verwijdert ook de goedgekeurde registratie.':'Je aanvraag wordt ingetrokken en verwijderd.'}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm btn-danger" style="flex:1;" onclick="vakIntrekkenBevestigd('${aanvraag._id}')">✓ Ja, intrekken</button>
+        <button class="btn btn-sm btn-ghost" style="flex:1;" onclick="document.getElementById('intrek-bevestig-${aanvraag._id}').style.display='none';document.getElementById('intrek-knop-${aanvraag._id}').style.display=''">Annuleren</button>
+      </div>
+    </div>
+    <button id="intrek-knop-${aanvraag._id}" class="btn btn-sm btn-ghost" style="color:var(--red);width:100%;" onclick="document.getElementById('intrek-bevestig-${aanvraag._id}').style.display='';this.style.display='none'">↩ Vakantie intrekken</button>
+  </div>` : '';
+
+  // Dismiss button for rejected requests (monteur can hide them from their overview)
+  const kanVerbergen = showIntrek && aanvraag.status === 'rejected';
+  const verbergHTML = kanVerbergen ? `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+    <div id="verberg-bevestig-${aanvraag._id}" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:8px;">
+      <div style="font-size:13px;font-weight:500;margin-bottom:8px;color:var(--text2);">Aanvraag verwijderen uit overzicht?</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm btn-ghost" style="flex:1;color:var(--red);" onclick="vakVerbergenBevestigd('${aanvraag._id}')">✓ Verwijderen</button>
+        <button class="btn btn-sm btn-ghost" style="flex:1;" onclick="document.getElementById('verberg-bevestig-${aanvraag._id}').style.display='none';document.getElementById('verberg-knop-${aanvraag._id}').style.display=''">Annuleren</button>
+      </div>
+    </div>
+    <button id="verberg-knop-${aanvraag._id}" class="btn btn-sm btn-ghost" style="color:var(--text2);width:100%;font-size:12px;" onclick="document.getElementById('verberg-bevestig-${aanvraag._id}').style.display='';this.style.display='none'">✕ Verwijder uit overzicht</button>
+  </div>` : '';
+  return `<div class="vak-req-card ${aanvraag.status}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div>
+        ${monteurNaam?`<div style="font-size:14px;font-weight:600;margin-bottom:3px;">👷 ${monteurNaam}</div>`:''}
+        <div style="font-size:14px;font-weight:500;">🏖 ${soortLabel}</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:3px;">${periode}</div>
+        <div style="font-size:13px;font-weight:600;margin-top:4px;color:var(--green);">Op te nemen: ${aanvraag.werkdagen} werkdag${aanvraag.werkdagen!==1?'en':''}</div>
+        ${toelHTML}
+        ${redenHTML}
+      </div>
+      <div style="flex-shrink:0;">${vakBadgeHTML(aanvraag.status)}</div>
+    </div>
+    ${actieHTML}
+    ${intrekHTML}
+    ${verbergHTML}
+  </div>`;
+}
+
+function openVakModal() {
+  const vandaag=new Date().toISOString().slice(0,10);
+  document.getElementById('vak-van').value=vandaag;
+  document.getElementById('vak-tot').value=vandaag;
+  document.getElementById('vak-toelichting').value='';
+  // Reset soort to first option
+  const soort = document.getElementById('vak-soort');
+  if (soort) soort.selectedIndex = 0;
+  // Hide teller and warnings
+  const teller = document.getElementById('vak-dagen-teller');
+  if (teller) teller.style.display = 'none';
+  document.getElementById('vak-weekend-warning').style.display='none';
+  vakUpdatePreview();
+  openModal('modal-vakantie');
+}
+
+function vakUpdatePreview() {
+  const van=document.getElementById('vak-van')?.value;
+  const tot=document.getElementById('vak-tot')?.value;
+  const teller=document.getElementById('vak-dagen-teller');
+  const warn=document.getElementById('vak-weekend-warning');
+  const indienBtn=document.getElementById('vak-indienen-btn');
+
+  if(!van||!tot) {
+    if(teller) teller.style.display='none';
+    if(warn) warn.style.display='none';
+    return;
+  }
+  if(tot<van) {
+    if(teller) teller.style.display='none';
+    if(warn) { warn.style.display=''; warn.textContent='⚠ Einddatum moet na of gelijk aan startdatum liggen.'; }
+    if(indienBtn) indienBtn.disabled=true;
+    return;
+  }
+
+  const werkdagen=werkdagenInRange(van,tot);
+  const weekendDagen=weekenddagenInRange(van,tot);
+
+  if(werkdagen.length===0) {
+    if(teller) teller.style.display='none';
+    if(warn) { warn.style.display=''; warn.textContent='⚠ Geen werkdagen in deze periode. Weekenddagen tellen niet mee als vakantiedagen.'; }
+    if(indienBtn) indienBtn.disabled=true;
+    return;
+  }
+
+  if(warn) warn.style.display='none';
+  if(indienBtn) indienBtn.disabled=false;
+
+  // Show the day counter
+  const eersteWerkdag=werkdagen[0];
+  const laatsteWerkdag=werkdagen[werkdagen.length-1];
+  const isSameDay=eersteWerkdag===laatsteWerkdag;
+  const vanFmt=new Date(eersteWerkdag).toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
+  const totFmt=new Date(laatsteWerkdag).toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  const getal=document.getElementById('vak-dagen-getal');
+  const periode=document.getElementById('vak-dagen-periode');
+  if(getal) getal.textContent=`${werkdagen.length} werkdag${werkdagen.length!==1?'en':''}`;
+  if(periode) periode.textContent=isSameDay ? vanFmt : `${vanFmt} t/m ${totFmt}`;
+  if(teller) teller.style.display='';
+
+  // Weekend info inside teller border is already shown statically
+  // Show extra note if weekends were skipped
+  if(weekendDagen>0 && warn) {
+    warn.style.display='';
+    warn.innerHTML=`📅 ${weekendDagen} weekenddag${weekendDagen!==1?'en':''} worden automatisch overgeslagen en tellen niet mee.`;
+  }
+}
+
+function vakAanvragen() {
+  const van=document.getElementById('vak-van').value;
+  const tot=document.getElementById('vak-tot').value;
+  const toel=document.getElementById('vak-toelichting').value.trim();
+  const soortSel=document.getElementById('vak-soort');
+  const soortCode=soortSel?soortSel.value:'VAK';
+  const soortNaam=soortSel?soortSel.options[soortSel.selectedIndex]?.text.replace(/^.\s/,''):'Vakantie';
+  if(!van||!tot){toast('Kies een start- en einddatum');return;}
+  if(tot<van){toast('Einddatum moet na begindatum liggen');return;}
+  const werkdagen=werkdagenInRange(van,tot);
+  if(werkdagen.length===0){toast('Geen werkdagen in deze periode');return;}
+  const eersteWerkdag = werkdagen[0];
+  const laatsteWerkdag = werkdagen[werkdagen.length-1];
+  const bestaand=(app.vakantieAanvragen||[]).filter(v=>v.mIdx===session.idx&&v.status!=='rejected');
+  for(const bv of bestaand){
+    const ovlp=werkdagen.some(d=>d>=bv.van&&d<=bv.tot);
+    if(ovlp){toast('Er bestaat al een aanvraag die deze periode overlapt');return;}
+  }
+  const aanvraag={
+    _id:genId(), mIdx:session.idx,
+    van:eersteWerkdag, tot:laatsteWerkdag,
+    werkdagen:werkdagen.length,
+    soortCode, soortNaam,
+    status:'pending', toelichting:toel,
+    aangemaaktOp:Date.now(), reden:''
+  };
+  if(!app.vakantieAanvragen) app.vakantieAanvragen=[];
+  app.vakantieAanvragen.push(aanvraag);
+  const indienBtn = document.getElementById('vak-indienen-btn');
+  if(indienBtn){ indienBtn.disabled=true; indienBtn.textContent='Bezig…'; }
+  syncSave();
+  closeModal('modal-vakantie');
+  toast(`✓ ${soortNaam} aangevraagd — ${werkdagen.length} werkdag${werkdagen.length!==1?'en':''}`);
+  renderMVak();
+}
+
+function vakApprove(id) {
+  const aanvraag=(app.vakantieAanvragen||[]).find(v=>v._id===id);
+  if(!aanvraag) return;
+  app.registraties=app.registraties.filter(r=>r.vakAanvraagId!==id);
+  const werkdagen = werkdagenInRange(aanvraag.van, aanvraag.tot);
+  const eersteWerkdag = werkdagen[0] || aanvraag.van;
+  const laatsteWerkdag = werkdagen[werkdagen.length-1] || aanvraag.tot;
+  app.registraties.push({
+    _id: genId(), mIdx: aanvraag.mIdx,
+    type: 'vrij', vrijCode: 'VAK', vrijNaam: 'Vakantie', vrijKleur: 'orange',
+    start: new Date(eersteWerkdag + 'T08:00').getTime(),
+    eind: new Date(laatsteWerkdag + 'T17:00').getTime(),
+    vakVan: eersteWerkdag, vakTot: laatsteWerkdag,
+    werkdagen: werkdagen.length, pauzes: [],
+    werkzaamheden: aanvraag.toelichting || '',
+    invoerMethode: 'vakantie', vakAanvraagId: id, isVakBlok: true
+  });
+  aanvraag.status='approved'; aanvraag.goedgekeurdOp=Date.now();
+  syncSave();
+  toast(`✓ Vakantie goedgekeurd — ${werkdagen.length} werkdagen als één blok`);
+  if(session.rol==='medewerker') renderMWVakantie(); else renderAdmin();
+}
+
+function vakRejectOpen(id) {
+  pendingRejectId=id;
+  const aanvraag=(app.vakantieAanvragen||[]).find(v=>v._id===id);
+  if(!aanvraag) return;
+  const naam=app.monteurs[aanvraag.mIdx]?.naam||'?';
+  const vanFmt=new Date(aanvraag.van).toLocaleDateString('nl-NL',{day:'numeric',month:'long'});
+  const totFmt=new Date(aanvraag.tot).toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('vak-reject-info').textContent=`${naam} · ${vanFmt} – ${totFmt} (${aanvraag.werkdagen} werkdagen)`;
+  document.getElementById('vak-reject-reden').value='';
+  openModal('modal-vak-reject');
+}
+
+function vakRejectConfirm() {
+  if(!pendingRejectId) return;
+  const aanvraag=(app.vakantieAanvragen||[]).find(v=>v._id===pendingRejectId);
+  if(!aanvraag) return;
+  aanvraag.status='rejected';
+  aanvraag.reden=document.getElementById('vak-reject-reden').value.trim();
+  aanvraag.afgewezenOp=Date.now();
+  app.registraties=app.registraties.filter(r=>r.vakAanvraagId!==pendingRejectId);
+  pendingRejectId=null;
+  syncSave();
+  closeModal('modal-vak-reject');
+  toast('Vakantieaanvraag afgewezen');
+  if(session.rol==='medewerker') renderMWVakantie(); else renderAdmin();
+}
+
+function vakIntrekkenBevestigd(id) {
+  app.registraties = app.registraties.filter(r=>r.vakAanvraagId!==id);
+  app.vakantieAanvragen = app.vakantieAanvragen.filter(v=>v._id!==id);
+  syncSave(); toast('↩ Vakantie ingetrokken'); renderMVak();
+}
+
+// Monteur verbergt een afgewezen aanvraag uit zijn eigen overzicht
+function vakVerbergenBevestigd(id) {
+  app.vakantieAanvragen = app.vakantieAanvragen.filter(v=>v._id!==id);
+  syncSave();
+  toast('✓ Aanvraag verwijderd uit overzicht');
+  renderMVak();
+}
+
+function renderMVak() {
+  clearInterval(timerInt);
+  document.getElementById('m-timer').textContent='00:00:00';
+  document.getElementById('m-status-pill').className='status-pill idle';
+  document.getElementById('m-status-txt').textContent='';
+  document.getElementById('m-proj-name').textContent='';
+  const idx=session.idx;
+  const aanvragen=getVakantieAanvragen(idx).sort((a,b)=>b.aangemaaktOp-a.aangemaaktOp);
+  const pending=aanvragen.filter(v=>v.status==='pending');
+  const approved=aanvragen.filter(v=>v.status==='approved');
+  const rejected=aanvragen.filter(v=>v.status==='rejected');
+  let infoHTML = '';
+  if(pending.length>0){
+    infoHTML = `<div style="background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--orange);display:flex;align-items:center;gap:9px;margin-bottom:12px;">
+      <span style="font-size:16px;">⏳</span>
+      <span>Je vakantieaanvra${pending.length===1?'ag is ingediend':'gen zijn ingediend'} en wacht${pending.length===1?'':'en'} op goedkeuring.</span>
+    </div>`;
+  }
+  let html = infoHTML + `<button class="btn btn-warning" id="vak-aanvraag-btn" onclick="openVakModal()" style="margin-bottom:4px;">🏖 Nieuwe vakantie aanvragen</button>`;
+  if(pending.length>0){html+=`<div class="section-title">In afwachting (${pending.length})</div>`;pending.forEach(v=>{html+=vakBlokCardHTML(v,false,false,true);});}
+  if(approved.length>0){html+=`<div class="section-title">Goedgekeurd</div>`;approved.forEach(v=>{html+=vakBlokCardHTML(v,false,false,true);});}
+  if(rejected.length>0){html+=`<div class="section-title">Afgewezen</div>`;rejected.forEach(v=>{html+=vakBlokCardHTML(v,false,false,false);});}
+  if(aanvragen.length===0) html+=`<div class="empty-state" style="margin-top:8px;"><div class="empty-icon">🏖</div><p>Nog geen vakantieaanvragen.</p></div>`;
+  document.getElementById('m-body').innerHTML=html;
+}
+
+// ═══════════════════════ MONTEUR DASH ═══════════════════════
+
+function openMonteurDash() {
+  const m = app.monteurs[session.idx];
+  const h = new Date().getHours();
+  document.getElementById('m-greeting').textContent = h<12?'Goedemorgen':h<18?'Goedemiddag':'Goedenavond';
+  document.getElementById('m-name').textContent = m.naam;
+  document.getElementById('m-date').textContent = new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
+  mActiveTab = 'klok'; updateMTabs(); renderMKlok();
+  showScreen('screen-monteur');
+}
+function mTab(t) { mActiveTab=t; updateMTabs(); ({klok:renderMKlok,uren:renderMUren,vak:renderMVak,inst:renderMInst}[t])(); }
+function updateMTabs() { ['klok','uren','vak','inst'].forEach(t=>document.getElementById('mtab-'+t)?.classList.toggle('active',t===mActiveTab)); }
+
+function renderMKlok() {
+  const idx = session.idx;
+  const m = app.monteurs[idx];
+  if ((m.registratieType||'timer') === 'handmatig') { renderMHandmatig(); return; }
+  const reg = getActief(idx);
+  const pill = document.getElementById('m-status-pill');
+  const dot = document.getElementById('m-dot');
+  const stxt = document.getElementById('m-status-txt');
+  const pname = document.getElementById('m-proj-name');
+  const body = document.getElementById('m-body');
+  clearInterval(timerInt);
+
+  if (!reg) {
+    pill.className='status-pill idle'; pill.style.display='none';
+    dot.className='sdot'; stxt.textContent='Niet ingeklokt';
+    document.getElementById('m-timer').textContent=''; pname.textContent='';
+
+    // IMPROVEMENT 1: only show this monteur's relevant work orders
+    const myWO = app.werkorders.filter(w=>!w.monteurIdxs||w.monteurIdxs.length===0||w.monteurIdxs.includes(idx));
+
+    const vrijHTML = app.vrijCodes.length > 0 ? `
+      <div class="section-title">Vrij / intern (geen werkorder)</div>
+      <div class="vrij-grid">${app.vrijCodes.map((c,i)=>`
+        <div class="vrij-btn kleur-${c.kleur}" onclick="mIncheckVrij(${i})">
+          <div class="vb-code">${c.code}</div>
+          <div class="vb-naam">${c.naam}</div>
+        </div>`).join('')}
+      </div>` : '';
+
+    // IMPROVEMENT 1: determine default start/end based on 8-hour day
+    const nu = new Date();
+    const defaultStart = '07:00';
+    const defaultEind = '15:30';
+
+    body.innerHTML = `
+      <!-- IMPROVEMENT 1: info banner -->
+      <div class="dag-info-banner">
+        <span class="dib-icon">ℹ️</span>
+        <span class="dib-tekst">Je werkt vandaag standaard <strong>8 uur</strong>. Pas dit aan indien nodig.</span>
+      </div>
+      <!-- END IMPROVEMENT 1 -->
+      <div class="card">
+        <div class="card-label">Werkorder</div>
+        <select class="select-field" id="wo-sel" onchange="mToonOmschrijving(this)">
+          <option value="">— Selecteer werkorder —</option>
+          ${myWO.map(w=>`<option value="${app.werkorders.indexOf(w)}">${w.naam}</option>`).join('')}
+        </select>
+        <div id="wo-omschrijving-blok" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px;font-size:14px;color:var(--text);line-height:1.5;"></div>
+        <button class="btn btn-success" onclick="mInchecken()">▶ Inchecken op werkorder</button>
+      </div>
+      ${vrijHTML}
+      ${mDagOverzichtHTML(idx)}`;
+  } else {
+    const isPauze = isPauzeActief(reg);
+    const isVrij = reg.type === 'vrij';
+    pill.className = 'status-pill ' + (isVrij?'vrij':isPauze?'pauze':'active');
+    pill.style.display = '';
+    dot.className = 'sdot ' + (isVrij?'':isPauze?'pauze':'active');
+    stxt.textContent = isVrij ? (reg.vrijNaam||'Vrij/intern') : isPauze ? 'Pauze' : 'Ingeklokt';
+    pname.textContent = isVrij ? (reg.vrijNaam||'') : (app.werkorders[reg.woIdx]?.naam||'');
+    body.innerHTML = `
+      ${isPauze&&!isVrij?'<div class="pauze-banner">⏸ Pauze actief</div>':''}
+      ${!isVrij?`<button class="btn ${isPauze?'btn-warning':'btn-ghost'}" onclick="mPauze()">${isPauze?'▶ Pauze beëindigen':'⏸ Pauze starten'}</button>`:''}
+      <button class="btn btn-danger" onclick="mAskUitchecken()">⏹ ${isVrij?'Beëindigen':'Uitchecken'}</button>
+      ${mDagOverzichtHTML(idx)}`;
+  }
+}
+
+function mDagOverzichtHTML(idx) {
+  const nu = new Date();
+  const dagStart = new Date(nu); dagStart.setHours(0,0,0,0);
+  const dagEind  = new Date(nu); dagEind.setHours(23,59,59,999);
+  const regs = app.registraties
+    .filter(r => r.mIdx===idx && r.eind && r.start>=dagStart.getTime() && r.start<=dagEind.getTime())
+    .sort((a,b) => a.start-b.start);
+  if (regs.length === 0) {
+    return `<div class="section-title">Vandaag geregistreerd</div>
+      <div style="text-align:center;padding:14px 0;font-size:13px;color:var(--text3);">Nog geen afgeronde registraties vandaag.</div>`;
+  }
+  const totaalMs = regs.filter(r=>r.type!=='vrij').reduce((s,r)=>s+werkTijd(r),0);
+  const items = regs.map(r => {
+    const isVrij = r.type==='vrij';
+    const t1 = new Date(r.start).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+    const t2 = new Date(r.eind).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+    const label = isVrij ? (r.vrijNaam||r.vrijCode||'Vrij') : (r.woNaam||(r.woIdx!=null?app.werkorders[r.woIdx]?.naam:null)||'?');
+    const uren = isVrij ? '' : `<span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green);font-weight:500;white-space:nowrap;">${fmtUur(werkTijd(r))}</span>`;
+    const werkz = !isVrij && r.werkzaamheden
+      ? `<div style="font-size:12px;color:var(--accent);margin-top:3px;line-height:1.4;">✏️ ${r.werkzaamheden}</div>` : '';
+    return `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:500;">${label}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px;">🕐 ${t1} – ${t2}</div>
+        ${werkz}
+      </div>
+      ${uren}
+    </div>`;
+  }).join('');
+  return `<div class="section-title">Vandaag geregistreerd</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px 14px 4px;">
+      ${items}
+      <div style="display:flex;justify-content:space-between;padding:10px 0 2px;font-size:13px;font-weight:600;">
+        <span style="color:var(--text2);">Totaal vandaag</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--green);">${fmtUur(totaalMs)}</span>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════ VRIJ/INTERN REGISTRATIE ═══════════════════════
+
+let vrijRegCodeIdx = null;
+let vrijRegKeuze = 'dag';
+let vrijIsMeerdaags = false;
+
+function isMeerdaagsCode(code) {
+  return MEERDAAGSE_CODES.includes(code.toUpperCase());
+}
+
+function openVrijModal(codeIdx) {
+  vrijRegCodeIdx = codeIdx;
+  vrijRegKeuze = 'dag';
+  const code = app.vrijCodes[codeIdx];
+  vrijIsMeerdaags = isMeerdaagsCode(code.code);
+  const vandaag = new Date().toISOString().slice(0,10);
+  document.getElementById('vrij-modal-titel').textContent = code.naam;
+  const badge = document.getElementById('vrij-modal-badge');
+  badge.textContent = code.code;
+  badge.style.background = `var(--${code.kleur==='orange'?'orange':code.kleur==='red'?'red':code.kleur==='purple'?'purple':code.kleur==='teal'?'teal':code.kleur==='green'?'green':'accent'})`;
+  badge.style.color = (code.kleur==='orange'||code.kleur==='green'||code.kleur==='teal') ? '#111' : '#fff';
+  const meerdagBlok = document.getElementById('vrij-meerdag-blok');
+  const enkelDagBlok = document.getElementById('vrij-enkeldag-blok');
+  if (vrijIsMeerdaags) {
+    meerdagBlok.style.display = ''; enkelDagBlok.style.display = 'none';
+    document.getElementById('vrij-van-datum').value = vandaag;
+    document.getElementById('vrij-tot-datum').value = vandaag;
+    document.getElementById('vrij-periode-preview').style.display = 'none';
+    vrijUpdatePreview();
+  } else {
+    meerdagBlok.style.display = 'none'; enkelDagBlok.style.display = '';
+    document.getElementById('vrij-datum').value = vandaag;
+    document.getElementById('vrij-start').value = '';
+    document.getElementById('vrij-eind').value = '';
+    vrijKeuze('dag');
+  }
+  document.getElementById('vrij-toelichting').value = '';
+  openModal('modal-vrij-reg');
+}
+
+function vrijUpdatePreview() {
+  const van = document.getElementById('vrij-van-datum').value;
+  const tot = document.getElementById('vrij-tot-datum').value;
+  const prev = document.getElementById('vrij-periode-preview');
+  if (!van || !tot) { prev.style.display='none'; return; }
+  const vanD = new Date(van); const totD = new Date(tot);
+  if (totD < vanD) { prev.style.display='none'; return; }
+  const diffMs = totD.getTime() - vanD.getTime();
+  const aantalDagen = Math.round(diffMs / 86400000) + 1;
+  const vanFmt = vanD.toLocaleDateString('nl-NL', {weekday:'short', day:'numeric', month:'long'});
+  const totFmt = totD.toLocaleDateString('nl-NL', {weekday:'short', day:'numeric', month:'long', year:'numeric'});
+  prev.style.display = '';
+  if (aantalDagen === 1) {
+    prev.innerHTML = `🏖️ <strong>1 dag</strong> — ${vanFmt}`;
+  } else {
+    prev.innerHTML = `🏖️ <strong>${aantalDagen} dagen</strong><br>${vanFmt} t/m ${totFmt}`;
+  }
+}
+
+function vrijKeuze(keuze) {
+  vrijRegKeuze = keuze;
+  const dagBtn  = document.getElementById('vrij-keuze-dag');
+  const blokBtn = document.getElementById('vrij-keuze-blok');
+  const tijdDiv = document.getElementById('vrij-tijdblok');
+  const actief  = 'border:2px solid var(--accent);background:rgba(61,155,233,.08);';
+  const inactief = 'border:1px solid var(--border);background:var(--surface);';
+  dagBtn.style.cssText  = `cursor:pointer;text-align:center;padding:14px 10px;border-radius:var(--radius);${keuze==='dag'?actief:inactief}`;
+  blokBtn.style.cssText = `cursor:pointer;text-align:center;padding:14px 10px;border-radius:var(--radius);${keuze==='blok'?actief:inactief}`;
+  tijdDiv.style.display = keuze==='blok' ? '' : 'none';
+}
+
+function vrijOpslaanConfirm() {
+  const code = app.vrijCodes[vrijRegCodeIdx];
+  const toel = document.getElementById('vrij-toelichting').value.trim();
+  if (vrijIsMeerdaags) {
+    const van = document.getElementById('vrij-van-datum').value;
+    const tot = document.getElementById('vrij-tot-datum').value;
+    if (!van) { toast('Kies een begindatum'); return; }
+    if (!tot) { toast('Kies een einddatum'); return; }
+    const vanD = new Date(van); const totD = new Date(tot);
+    if (totD < vanD) { toast('Einddatum moet na of gelijk aan begindatum liggen'); return; }
+    const startMs = new Date(van + 'T08:00').getTime();
+    const eindMs  = new Date(tot + 'T17:00').getTime();
+    const diffDagen = Math.round((totD.getTime() - vanD.getTime()) / 86400000) + 1;
+    app.registraties.push({
+      _id: genId(), mIdx: session.idx, type: 'vrij',
+      vrijCode: code.code, vrijNaam: code.naam, vrijKleur: code.kleur,
+      start: startMs, eind: eindMs, vakVan: van, vakTot: tot,
+      pauzes: [], werkzaamheden: toel, invoerMethode: 'direct', isVakBlok: true
+    });
+    syncSave(); closeModal('modal-vrij-reg');
+    toast(`✓ ${code.naam} geregistreerd — ${diffDagen} dag${diffDagen!==1?'en':''}`);
+    renderMKlok();
+  } else {
+    const datum = document.getElementById('vrij-datum').value;
+    if (!datum) { toast('Kies een datum'); return; }
+    let startMs, eindMs;
+    if (vrijRegKeuze === 'dag') {
+      startMs = new Date(datum + 'T08:00').getTime();
+      eindMs  = new Date(datum + 'T17:00').getTime();
+    } else {
+      const s = document.getElementById('vrij-start').value;
+      const e = document.getElementById('vrij-eind').value;
+      if (!s || !e) { toast('Vul start- en eindtijd in'); return; }
+      startMs = new Date(datum + 'T' + s).getTime();
+      eindMs  = new Date(datum + 'T' + e).getTime();
+      if (eindMs <= startMs) { toast('Eindtijd moet na starttijd liggen'); return; }
+    }
+    app.registraties.push({
+      _id: genId(), mIdx: session.idx, type: 'vrij',
+      vrijCode: code.code, vrijNaam: code.naam, vrijKleur: code.kleur,
+      start: startMs, eind: eindMs, pauzes: [], werkzaamheden: toel, invoerMethode: 'direct'
+    });
+    syncSave(); closeModal('modal-vrij-reg');
+    toast('✓ ' + code.naam + ' geregistreerd');
+    renderMKlok();
+  }
+}
+
+// ═══════════════════════ HANDMATIG REGISTREREN ═══════════════════════
+
+let hmBlokken = [];
+
+function hmWoOpties(idx) {
+  // IMPROVEMENT 1: pre-filter to this monteur's relevant work orders
+  const myWO = app.werkorders.filter(w=>!w.monteurIdxs||w.monteurIdxs.length===0||w.monteurIdxs.includes(idx));
+  return '<option value="">— Selecteer werkorder —</option>' +
+    myWO.map(w=>`<option value="${app.werkorders.indexOf(w)}">${w.naam}</option>`).join('') +
+    '<option value="diverse">Diverse</option>';
+}
+
+// IMPROVEMENT 3: Image upload state per tijdblok
+let hmBlokImages = {};
+
+function hmBlokHTML(bi, vandaag, woOpties) {
+  const b = hmBlokken[bi];
+  const typeMonteur = b.typeMonteur || 'binnen';
+  const locatie = b.locatie || '';
+  const imgs = hmBlokImages[bi] || [];
+  const thumbsHTML = imgs.length > 0 ? `
+    <div class="img-preview-grid" id="hm-img-grid-${bi}">
+      ${imgs.map((img, ii) => `
+        <div class="img-thumb" id="hm-thumb-${bi}-${ii}">
+          <img src="${img.url}" alt="foto ${ii+1}" />
+          <button class="img-thumb-remove" onclick="hmRemoveImage(${bi},${ii})">×</button>
+        </div>`).join('')}
+    </div>` : `<div class="img-preview-grid" id="hm-img-grid-${bi}"></div>`;
+
+  return `<div class="card" id="hm-blok-${bi}" style="margin-bottom:12px;position:relative;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:600;color:var(--text2);">Tijdblok ${bi+1}</div>
+      ${bi>0?`<button onclick="hmVerwijderBlok(${bi})" style="background:none;border:none;color:var(--red);font-size:13px;cursor:pointer;padding:2px 6px;">✕ Verwijderen</button>`:''}
+    </div>
+    <div class="card-label">Datum</div>
+    <input class="input-field" type="date" id="hm-datum-${bi}" value="${b.datum||vandaag}" onchange="hmCheckWeekSlot(${bi})" />
+    <div id="hm-slot-melding-${bi}" style="display:none;background:rgba(232,85,85,.1);border:1px solid rgba(232,85,85,.3);border-radius:var(--radius-sm);padding:9px 12px;font-size:12px;color:var(--red);margin-bottom:8px;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><div class="card-label">Starttijd</div><input class="input-field" type="time" id="hm-start-${bi}" value="${b.start||''}" onchange="hmSyncState(${bi})" /></div>
+      <div><div class="card-label">Eindtijd</div><input class="input-field" type="time" id="hm-eind-${bi}" value="${b.eind||''}" onchange="hmSyncState(${bi})" /></div>
+    </div>
+    <div class="card-label">Type monteur</div>
+    <select class="select-field" id="hm-type-${bi}" onchange="hmTypeMonteurChange(${bi})">
+      <option value="binnen" ${typeMonteur==='binnen'?'selected':''}>Binnenmonteur</option>
+      <option value="buiten" ${typeMonteur==='buiten'?'selected':''}>Buitenmonteur</option>
+    </select>
+    <div id="hm-locatie-wrap-${bi}" style="display:${typeMonteur==='buiten'?'block':'none'};">
+      <div class="card-label">Waar zijn de werkzaamheden uitgevoerd?</div>
+      <input class="input-field" type="text" id="hm-locatie-${bi}" value="${locatie}" placeholder="Voer plaatsnaam of adres in" onchange="hmSyncState(${bi})" />
+    </div>
+    <div class="card-label">Werkorder</div>
+    <select class="select-field" id="hm-wo-${bi}" onchange="hmSyncState(${bi})">${woOpties}</select>
+    <div class="card-label">Werkzaamheden (verplicht)</div>
+    <textarea class="textarea-field" id="hm-werkz-${bi}" rows="2" placeholder="Beschrijf kort wat je hebt gedaan…" onchange="hmSyncState(${bi})">${b.werkz||''}</textarea>
+
+    <!-- IMPROVEMENT 3: image upload under werkzaamheden -->
+    <div class="img-upload-wrap">
+      <div class="img-upload-label-row">Afbeeldingen toevoegen (optioneel)</div>
+      <label class="img-upload-trigger" for="hm-img-input-${bi}">
+        <span class="iut-icon">📷</span>
+        <span>Tik om foto's te kiezen</span>
+      </label>
+      <input class="img-upload-input" type="file" id="hm-img-input-${bi}"
+        accept="image/*" multiple
+        onchange="hmHandleImages(${bi}, this)" />
+      ${thumbsHTML}
+    </div>
+    <!-- END IMPROVEMENT 3 -->
+  </div>`;
+}
+
+// Show/hide locatie field when type monteur changes
+function hmTypeMonteurChange(bi) {
+  hmSyncState(bi);
+  const wrap = document.getElementById('hm-locatie-wrap-' + bi);
+  const type = document.getElementById('hm-type-' + bi)?.value;
+  if (wrap) wrap.style.display = type === 'buiten' ? 'block' : 'none';
+  // Clear locatie when switching back to binnen
+  if (type === 'binnen') {
+    const loc = document.getElementById('hm-locatie-' + bi);
+    if (loc) loc.value = '';
+    if (hmBlokken[bi]) hmBlokken[bi].locatie = '';
+  }
+}
+
+// IMPROVEMENT 3: handle image selection
+function hmHandleImages(bi, input) {
+  if (!hmBlokImages[bi]) hmBlokImages[bi] = [];
+  const files = Array.from(input.files);
+  let loaded = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      hmBlokImages[bi].push({ url: e.target.result, name: file.name });
+      loaded++;
+      if (loaded === files.length) hmRefreshImageGrid(bi);
+    };
+    reader.readAsDataURL(file);
+  });
+  // Reset input so same file can be re-added
+  input.value = '';
+}
+
+function hmRemoveImage(bi, ii) {
+  if (!hmBlokImages[bi]) return;
+  hmBlokImages[bi].splice(ii, 1);
+  hmRefreshImageGrid(bi);
+}
+
+function hmRefreshImageGrid(bi) {
+  const grid = document.getElementById('hm-img-grid-' + bi);
+  if (!grid) return;
+  const imgs = hmBlokImages[bi] || [];
+  if (imgs.length === 0) { grid.innerHTML = ''; return; }
+  grid.innerHTML = imgs.map((img, ii) => `
+    <div class="img-thumb" id="hm-thumb-${bi}-${ii}">
+      <img src="${img.url}" alt="foto ${ii+1}" />
+      <button class="img-thumb-remove" onclick="hmRemoveImage(${bi},${ii})">×</button>
+    </div>`).join('');
+}
+
+function hmSyncState(bi) {
+  if (!hmBlokken[bi]) return;
+  hmBlokken[bi].datum = document.getElementById('hm-datum-'+bi)?.value||'';
+  hmBlokken[bi].start = document.getElementById('hm-start-'+bi)?.value||'';
+  hmBlokken[bi].eind  = document.getElementById('hm-eind-'+bi)?.value||'';
+  hmBlokken[bi].woIdx = document.getElementById('hm-wo-'+bi)?.value||'';
+  hmBlokken[bi].werkz = document.getElementById('hm-werkz-'+bi)?.value||'';
+  hmBlokken[bi].typeMonteur = document.getElementById('hm-type-'+bi)?.value||'binnen';
+  hmBlokken[bi].locatie = document.getElementById('hm-locatie-'+bi)?.value||'';
+}
+
+function hmCheckWeekSlot(bi) {
+  hmSyncState(bi);
+  const datum = hmBlokken[bi]?.datum;
+  const melding = document.getElementById('hm-slot-melding-'+bi);
+  if (!melding) return;
+  if (datum && isWeekGesloten(new Date(datum+'T12:00').getTime())) {
+    const d = new Date(datum+'T12:00');
+    const weekNr = isoWeek(d);
+    melding.textContent = `🔒 Week ${weekNr} is afgesloten — neem contact op met de beheerder.`;
+    melding.style.display = '';
+  } else {
+    melding.style.display = 'none';
+  }
+}
+
+function hmSyncAllState() {
+  hmBlokken.forEach((_,bi) => hmSyncState(bi));
+}
+
+function hmVerwijderBlok(bi) {
+  hmSyncAllState();
+  hmBlokken.splice(bi,1);
+  delete hmBlokImages[bi];
+  // Re-index image store
+  const newImages = {};
+  Object.keys(hmBlokImages).forEach(k => {
+    const ki = parseInt(k);
+    if (ki > bi) newImages[ki - 1] = hmBlokImages[k];
+    else if (ki < bi) newImages[ki] = hmBlokImages[k];
+  });
+  hmBlokImages = newImages;
+  hmHerrender();
+}
+
+function hmVoegBlokToe() {
+  hmSyncAllState();
+  const standaardDatum = vorigeWeekMaandag();
+  const vorigeDate = hmBlokken.length > 0 ? hmBlokken[hmBlokken.length-1].datum : standaardDatum;
+  hmBlokken.push({datum: vorigeDate, start:'', eind:'', woIdx:'', werkz:'', typeMonteur:'binnen', locatie:''});
+  hmHerrender();
+  setTimeout(()=>{
+    const el = document.getElementById('hm-blok-'+(hmBlokken.length-1));
+    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  },100);
+}
+
+function hmHerrender() {
+  const idx = session.idx;
+  const standaardDatum = vorigeWeekMaandag();
+  const woOpties = hmWoOpties(idx);
+  const blokkenHTML = hmBlokken.map((_,bi)=>hmBlokHTML(bi,standaardDatum,woOpties)).join('');
+
+  const actieveDatum = hmBlokken[0]?.datum || standaardDatum;
+  const actieveWeekStart = new Date(actieveDatum+'T00:00').getTime();
+  const dagOffset = (new Date(actieveDatum).getDay() + 6) % 7;
+  const weekMa = actieveWeekStart - dagOffset * 86400000;
+  const weekZo = weekMa + 7 * 86400000 - 1;
+  const weekRegs = app.registraties.filter(r =>
+    r.mIdx===idx && r.eind && r.type!=='vrij' &&
+    r.start >= weekMa && r.start <= weekZo
+  );
+  let bestaand = '';
+  if (weekRegs.length > 0) {
+    bestaand = '<div class="section-title">Al opgeslagen deze week</div>';
+    weekRegs.sort((a,b)=>a.start-b.start).forEach(r => {
+      const d = new Date(r.start).toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'});
+      const t1 = new Date(r.start).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+      const t2 = new Date(r.eind).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+      const wo = r.woNaam||(r.woIdx!=null?app.werkorders[r.woIdx]?.naam:null)||'?';
+      bestaand += `<div class="log-item" style="margin-bottom:8px;">
+        <div class="log-top"><div class="log-project">${wo}</div><div class="log-uren">${fmtUur(werkTijd(r))}</div></div>
+        <div class="log-meta">${d} · ${t1}–${t2}${r.werkzaamheden?' · '+r.werkzaamheden:''}</div>
+      </div>`;
+    });
+  }
+
+  // IMPROVEMENT 1: info banner at top of handmatig screen
+  const infoBanner = `
+    <div class="dag-info-banner" style="margin-bottom:14px;">
+      <span class="dib-icon">ℹ️</span>
+      <span class="dib-tekst">Je werkt vandaag standaard <strong>8 uur</strong>. Pas dit aan indien nodig.</span>
+    </div>`;
+
+  const vrijHTML = app.vrijCodes.length>0?`<div class="section-title">Vrij / intern</div><div class="vrij-grid">${app.vrijCodes.map((c,ci)=>`
+    <div class="vrij-btn kleur-${c.kleur}" onclick="mHandmatigVrij(${ci})">
+      <div class="vb-code">${c.code}</div><div class="vb-naam">${c.naam}</div>
+    </div>`).join('')}</div>`:'';
+
+  document.getElementById('m-body').innerHTML = `
+    ${bestaand}
+    ${infoBanner}
+    <div class="section-title">Tijdblokken invoeren</div>
+    <div id="hm-blokken-container">${blokkenHTML}</div>
+    <button class="btn btn-ghost" onclick="hmVoegBlokToe()" style="margin-bottom:12px;">＋ Tijdblok toevoegen</button>
+    <button class="btn btn-success" onclick="mHandmatigOpslaanAlles()">✓ Alle tijdblokken opslaan</button>
+    ${vrijHTML}`;
+
+  hmBlokken.forEach((b,bi) => {
+    const sel = document.getElementById('hm-wo-'+bi);
+    if (sel && b.woIdx!=='') sel.value = b.woIdx;
+  });
+}
+
+function renderMHandmatig() {
+  const pill = document.getElementById('m-status-pill');
+  const stxt = document.getElementById('m-status-txt');
+  const pname = document.getElementById('m-proj-name');
+  clearInterval(timerInt);
+  document.getElementById('m-timer').textContent = '';
+  pill.className = 'status-pill idle';
+  stxt.textContent = 'Handmatig invoeren';
+  pname.textContent = '';
+  const standaardDatum = vorigeWeekMaandag();
+  hmBlokken = [{datum: standaardDatum, start:'', eind:'', woIdx:'', werkz:'', typeMonteur:'binnen', locatie:''}];
+  hmBlokImages = {};
+  hmHerrender();
+}
+
+function mHandmatigOpslaanAlles() {
+  hmSyncAllState();
+  let aantalOpgeslagen = 0;
+  let fout = null;
+  for (let bi = 0; bi < hmBlokken.length; bi++) {
+    const b = hmBlokken[bi];
+    const leeg = !b.datum && !b.start && !b.eind && !b.woIdx && !b.werkz.trim();
+    if (leeg) continue;
+    if (!b.datum)       { fout = `Tijdblok ${bi+1}: kies een datum`; break; }
+    if (!b.start)       { fout = `Tijdblok ${bi+1}: vul een starttijd in`; break; }
+    if (!b.eind)        { fout = `Tijdblok ${bi+1}: vul een eindtijd in`; break; }
+    if (!b.woIdx)       { fout = `Tijdblok ${bi+1}: selecteer een werkorder`; break; }
+    if (!b.werkz.trim()){ fout = `Tijdblok ${bi+1}: vul werkzaamheden in`; break; }
+    const startMs = new Date(b.datum+'T'+b.start).getTime();
+    const eindMs  = new Date(b.datum+'T'+b.eind).getTime();
+    if (eindMs <= startMs) { fout = `Tijdblok ${bi+1}: eindtijd moet na starttijd liggen`; break; }
+    if (isWeekGesloten(startMs)) {
+      const weekNr = isoWeek(new Date(startMs));
+      fout = `Tijdblok ${bi+1}: 🔒 Week ${weekNr} is afgesloten.`; break;
+    }
+    const isDiverse = b.woIdx === 'diverse';
+    const woIdx = isDiverse ? null : parseInt(b.woIdx);
+    // Note: images are stored in hmBlokImages[bi] but not persisted to server (client-side only)
+    app.registraties.push({
+      _id: genId(), mIdx: session.idx, woIdx, type: 'werk',
+      woNaam: isDiverse ? 'Diverse' : (app.werkorders[woIdx]?.naam||''),
+      start: startMs, eind: eindMs, pauzes: [],
+      werkzaamheden: b.werkz.trim(),
+      omschrijving: isDiverse ? '' : (app.werkorders[woIdx]?.omschrijving||''),
+      invoerMethode: 'handmatig',
+      typeMonteur: b.typeMonteur || 'binnen',
+      locatie: (b.typeMonteur === 'buiten' && b.locatie) ? b.locatie.trim() : '',
+      afbeeldingen: (hmBlokImages[bi]||[]).map(i=>i.name)
+    });
+    aantalOpgeslagen++;
+  }
+  if (fout) { toast('⚠ ' + fout); return; }
+  if (aantalOpgeslagen === 0) { toast('Geen tijdblokken ingevuld'); return; }
+  syncSave();
+  toast(`✓ ${aantalOpgeslagen} tijdblok${aantalOpgeslagen>1?'ken':''} opgeslagen`);
+  hmBlokken = [{datum: vorigeWeekMaandag(), start:'', eind:'', woIdx:'', werkz:'', typeMonteur:'binnen', locatie:''}];
+  hmBlokImages = {};
+  hmHerrender();
+}
+
+function mHandmatigVrij(codeIdx) {
+  const code = app.vrijCodes[codeIdx];
+  if (isMeerdaagsCode(code.code)) { openVakModal(); } else { openVrijModal(codeIdx); }
+}
+
+function mToonOmschrijving(sel) {
+  const blok = document.getElementById('wo-omschrijving-blok');
+  if (!blok) return;
+  const wo = app.werkorders[parseInt(sel.value)];
+  if (wo?.omschrijving) {
+    blok.innerHTML = '<span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">📋 Omschrijving kantoor</span><br><span style="margin-top:4px;display:block;">' + wo.omschrijving + '</span>';
+    blok.style.display = '';
+  } else {
+    blok.style.display = 'none';
+  }
+}
+
+function mInchecken() {
+  const sel = document.getElementById('wo-sel');
+  if (!sel||sel.value===''){toast('Selecteer een werkorder');return;}
+  if (isWeekGesloten(Date.now())) {
+    const weekNr = isoWeek(new Date());
+    toast(`🔒 Week ${weekNr} is afgesloten.`);
+    return;
+  }
+  const woIdx = parseInt(sel.value);
+  const id = genId();
+  app.registraties.push({_id:id, mIdx:session.idx, woIdx, type:'werk', start:Date.now(), eind:null, pauzes:[], werkzaamheden:'', omschrijving: app.werkorders[woIdx]?.omschrijving||''});
+  syncSave(); renderMKlok();
+}
+
+function mIncheckVrij(codeIdx) {
+  const code = app.vrijCodes[codeIdx];
+  if (isMeerdaagsCode(code.code)) { openVakModal(); } else { openVrijModal(codeIdx); }
+}
+
+function mAskUitchecken() {
+  const reg = getActief(session.idx); if (!reg) return;
+  pendingUitcheck = reg;
+  if (reg.type === 'vrij') { confirmUitchecken(); return; }
+  const wo = app.werkorders[reg.woIdx];
+  document.getElementById('modal-wo-info').textContent = wo?.naam||'';
+  const omschrijvingBlok = document.getElementById('modal-omschrijving-toon');
+  const omschrijvingTekst = document.getElementById('modal-omschrijving-tekst');
+  if (wo?.omschrijving) {
+    omschrijvingTekst.textContent = wo.omschrijving;
+    omschrijvingBlok.style.display = '';
+  } else {
+    omschrijvingBlok.style.display = 'none';
+  }
+  document.getElementById('modal-werkz').value = reg.werkzaamheden||'';
+  openModal('modal-uitcheck');
+}
+
+function confirmUitchecken() {
+  const reg = pendingUitcheck; if (!reg) return;
+  if (reg.type !== 'vrij') {
+    const werkz = document.getElementById('modal-werkz').value.trim();
+    if (!werkz) { toast('Vul werkzaamheden in'); return; }
+    reg.werkzaamheden = werkz;
+  }
+  closeModal('modal-uitcheck');
+  if (isPauzeActief(reg)) reg.pauzes[reg.pauzes.length-1].eind = Date.now();
+  reg.eind = Date.now();
+  pendingUitcheck = null;
+  syncSave(); clearInterval(timerInt);
+  const _t1 = new Date(reg.start).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  const _t2 = new Date(reg.eind).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  renderMKlok();
+  toast('✓ ' + (reg.type==='vrij' ? reg.vrijNaam+' beëindigd' : `Uitgecheckt: ${_t1}–${_t2} (${fmtUur(werkTijd(reg))})`));
+}
+
+function mPauze() {
+  const reg = getActief(session.idx); if (!reg) return;
+  if (isPauzeActief(reg)){reg.pauzes[reg.pauzes.length-1].eind=Date.now();toast('▶ Pauze beëindigd');}
+  else{reg.pauzes.push({start:Date.now(),eind:null});toast('⏸ Pauze gestart');}
+  syncSave(); renderMKlok();
+}
+
+let mUrenPeriode = 'week';
+function renderMUren() {
+  clearInterval(timerInt);
+  document.getElementById('m-timer').textContent='00:00:00';
+  document.getElementById('m-proj-name').textContent='';
+  document.getElementById('m-status-pill').className='status-pill idle';
+  document.getElementById('m-status-txt').textContent='';
+  const filterHTML = periodeFilterHTML('mUren', mUrenPeriode, false);
+  document.getElementById('m-body').innerHTML =
+    `<div style="margin-bottom:12px;">${filterHTML}</div><div id="muren-lijst"></div>`;
+  mUrenRefresh();
+}
+function mUrenSetPeriode(p) {
+  mUrenPeriode = p;
+  const filterHTML = periodeFilterHTML('mUren', p, false);
+  const wrap = document.getElementById('m-body').querySelector('div');
+  if (wrap) wrap.innerHTML = filterHTML;
+  mUrenRefresh();
+}
+function mUrenRefresh() {
+  const van = document.getElementById('mUren-van')?.value;
+  const tot = document.getElementById('mUren-tot')?.value;
+  const [van_ms, tot_ms] = periodeRange(mUrenPeriode, van, tot);
+  const regs = app.registraties.filter(r=>r.mIdx===session.idx&&r.eind&&r.start>=van_ms&&r.start<=tot_ms);
+  const werkMs = regs.filter(r=>r.type!=='vrij').reduce((s,r)=>s+werkTijd(r),0);
+  let html = `<div class="stats-grid">
+    <div class="stat-card"><div class="val">${fmtUur(werkMs)}</div><div class="lbl">Werkuren</div></div>
+    <div class="stat-card"><div class="val">${regs.length}</div><div class="lbl">Registraties</div></div>
+  </div>`;
+  if (regs.length===0) html += '<div class="empty-state"><div class="empty-icon">📋</div><p>Geen registraties in deze periode.</p></div>';
+  else [...regs].reverse().forEach(r=>{ html += logItemHTML(r,false,true); });
+  const lijst = document.getElementById('muren-lijst');
+  if (lijst) lijst.innerHTML = html;
+}
+
+function renderMInst() {
+  clearInterval(timerInt);
+  const m = app.monteurs[session.idx];
+  const mIdx = session.idx;
+  const heeftSub = !!(app.pushSubscriptions||[]).find(s=>s.mIdx===mIdx&&s.endpoint);
+  const swBeschikbaar = ('serviceWorker' in navigator) && ('PushManager' in window);
+  const pushStatus = swBeschikbaar ? Notification.permission : 'unavailable';
+
+  let pushHTML = '';
+  if (!swBeschikbaar) {
+    pushHTML = `<div style="background:rgba(139,139,139,.08);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--text2);">
+      Deze browser ondersteunt geen pushmeldingen.
+    </div>`;
+  } else if (pushStatus === 'denied') {
+    pushHTML = `<div style="background:rgba(232,85,85,.08);border:1px solid rgba(232,85,85,.2);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--red);">
+      ✕ Pushmeldingen zijn geblokkeerd in je browser.
+    </div>`;
+  } else if (heeftSub && pushStatus === 'granted') {
+    pushHTML = `<div style="background:rgba(46,204,138,.08);border:1px solid rgba(46,204,138,.2);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--green);margin-bottom:10px;">
+      ✓ Pushmeldingen zijn ingeschakeld op dit apparaat.
+    </div>
+    <button class="btn btn-ghost" style="color:var(--red);" onclick="mPushUitschakelen()">Pushmeldingen uitschakelen</button>`;
+  } else {
+    pushHTML = `<div style="font-size:13px;color:var(--text2);margin-bottom:10px;">Ontvang een melding als je uren nog niet zijn ingevuld.</div>
+    <button class="btn btn-primary" onclick="mPushInschakelen()">🔔 Pushmeldingen inschakelen</button>`;
+  }
+
+  document.getElementById('m-body').innerHTML = `
+    <div class="section-title">Account</div>
+    <div class="si"><div><div class="si-l">${m.naam}</div><div class="si-s">Monteur</div></div></div>
+    <div class="section-title" style="margin-top:18px;">PIN wijzigen</div>
+    <div class="card">
+      <input class="input-field" id="mp1" type="password" inputmode="numeric" maxlength="4" placeholder="Nieuwe PIN" />
+      <input class="input-field" id="mp2" type="password" inputmode="numeric" maxlength="4" placeholder="Herhaal PIN" />
+      <button class="btn btn-primary" onclick="mPinWijzig()">PIN wijzigen</button>
+    </div>
+    <div class="section-title">Pushmeldingen</div>
+    <div class="card">${pushHTML}</div>
+    <div class="section-title">Synchronisatie</div>
+    <div class="si"><div><div class="si-l">Server status</div><div class="si-s">${lastSync?'Laatst: '+lastSync.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}):'Nog niet gesynchroniseerd'}</div></div></div>
+    <button class="btn btn-ghost" style="margin-top:6px;" onclick="syncLoad().then(()=>toast('✓ Gesynchroniseerd'))">↻ Nu synchroniseren</button>
+    <button class="btn btn-ghost" style="margin-top:4px;" onclick="uitloggen()">← Uitloggen</button>`;
+}
+function mPinWijzig(){
+  const p1=document.getElementById('mp1').value,p2=document.getElementById('mp2').value;
+  if(!/^\d{4}$/.test(p1)){toast('PIN moet 4 cijfers zijn');return;}
+  if(p1!==p2){toast('PINs komen niet overeen');return;}
+  app.monteurs[session.idx].pin=p1; syncSave(); toast('✓ PIN gewijzigd');
+}
+
+// Push helpers (unchanged)
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
+}
+async function mPushInschakelen() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) { toast('Niet ondersteund'); return; }
+  try {
+    const toestemming = await Notification.requestPermission();
+    if (toestemming !== 'granted') { toast('Toestemming geweigerd'); renderMInst(); return; }
+    let swReg;
+    try { swReg = await navigator.serviceWorker.register('./sw.js'); await navigator.serviceWorker.ready; } catch(swErr) { toast('sw.js niet gevonden'); renderMInst(); return; }
+    const sub = await swReg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(CONFIG.vapidPublicKey) });
+    if (!app.pushSubscriptions) app.pushSubscriptions = [];
+    app.pushSubscriptions = app.pushSubscriptions.filter(s => !(s.mIdx === session.idx && s.endpoint === sub.endpoint));
+    app.pushSubscriptions.push({ mIdx: session.idx, naam: app.monteurs[session.idx].naam, endpoint: sub.endpoint, keys: { p256dh: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh')))), auth: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth')))) }, aangemaaktOp: Date.now() });
+    await syncSave(); toast('✓ Pushmeldingen ingeschakeld!'); renderMInst();
+  } catch(e) { toast('Inschakelen mislukt'); renderMInst(); }
+}
+async function mPushUitschakelen() {
+  try {
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.getRegistration('./sw.js');
+      if (reg) { const sub = await reg.pushManager.getSubscription(); if (sub) { await sub.unsubscribe(); app.pushSubscriptions = (app.pushSubscriptions||[]).filter(s => s.mIdx !== session.idx || s.endpoint !== sub.endpoint); } else { app.pushSubscriptions = (app.pushSubscriptions||[]).filter(s => s.mIdx !== session.idx); } } else { app.pushSubscriptions = (app.pushSubscriptions||[]).filter(s => s.mIdx !== session.idx); }
+    } else { app.pushSubscriptions = (app.pushSubscriptions||[]).filter(s => s.mIdx !== session.idx); }
+    await syncSave(); toast('Pushmeldingen uitgeschakeld'); renderMInst();
+  } catch(e) { toast('Uitschakelen mislukt'); }
+}
+
+function getMissendeWerkdagen(mIdx) {
+  const nu = new Date(); const huidigeDag = nu.getDay();
+  const ma = new Date(nu); ma.setDate(nu.getDate() - ((huidigeDag + 6) % 7)); ma.setHours(0, 0, 0, 0);
+  const dagNamen = ['ma', 'di', 'wo', 'do', 'vr'];
+  const missend = [];
+  for (let i = 0; i < 5; i++) {
+    const dag = new Date(ma); dag.setDate(ma.getDate() + i);
+    if (dag > nu) continue;
+    const dagStart = dag.getTime(); const dagEind = dagStart + 86400000;
+    const heeftReg = app.registraties.some(r => r.mIdx === mIdx && r.start >= dagStart && r.start < dagEind);
+    if (!heeftReg) missend.push({ dag: dagNamen[i], datum: dag });
+  }
+  return missend;
+}
+
+async function stuurPushNaarMonteur(mIdx) {
+  const naam = app.monteurs[mIdx]?.naam || '?';
+  const subs = (app.pushSubscriptions||[]).filter(s => s.mIdx === mIdx);
+  if (subs.length === 0) return false;
+  const payload = JSON.stringify({ title: '⏰ Uren niet compleet', body: `Beste ${naam}, je uren zijn nog niet volledig ingevuld.`, icon: '/favicon.ico', url: window.location.href });
+  try {
+    const res = await fetch(CONFIG.apiUrl + '?action=push_notify', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': CONFIG.apiKey }, body: JSON.stringify({ subscriptions: subs, payload }) });
+    return res.ok;
+  } catch(e) { return false; }
+}
+
+function getFallbackTekst(naam) {
+  return `Hoi ${naam}! Vriendelijke herinnering: je uren van deze week staan nog niet volledig in de app.`;
+}
+
+// ═══════════════════════ MEDEWERKER ═══════════════════════
+
+async function renderMWHerinneringen() {
+  const overzicht = app.monteurs.map((m, mIdx) => {
+    const missend = getMissendeWerkdagen(mIdx);
+    const heeftSub = (app.pushSubscriptions||[]).some(s => s.mIdx === mIdx);
+    return { mIdx, naam: m.naam, missend, heeftSub };
+  }).filter(o => o.missend.length > 0);
+  let html = `<button class="btn btn-warning" onclick="stuurHerinneringAllen()">🔔 Stuur herinnering aan alle (${overzicht.length})</button>`;
+  if (overzicht.length === 0) {
+    html += `<div class="empty-state"><div class="empty-icon">✓</div><p>Alle monteurs hebben hun uren ingevuld.</p></div>`;
+  } else {
+    overzicht.forEach(o => {
+      const dagStr = o.missend.map(d => d.dag).join(', ');
+      const fallback = getFallbackTekst(o.naam);
+      html += `<div class="card" style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px;">
+          <div>
+            <div style="font-size:15px;font-weight:600;">👷 ${o.naam}</div>
+            <div style="font-size:13px;color:var(--red);margin-top:3px;">⚠ Ontbrekend: <strong>${dagStr}</strong></div>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="stuurHerinnering(${o.mIdx})" id="hbtn-${o.mIdx}">${o.heeftSub ? '🔔 Stuur' : '📋 Kopieer'}</button>
+        </div>
+        ${!o.heeftSub ? `<div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--text2);">
+          <div id="fallback-${o.mIdx}">${fallback}</div>
+          <button class="btn btn-sm btn-ghost" style="margin-top:8px;" onclick="kopieerTekst(${o.mIdx})">📋 Kopieer tekst</button>
+        </div>` : ''}
+      </div>`;
+    });
+  }
+  document.getElementById('mw-body').innerHTML = html;
+}
+
+async function stuurHerinnering(mIdx) {
+  const btn = document.getElementById('hbtn-' + mIdx);
+  const naam = app.monteurs[mIdx]?.naam || '?';
+  const heeftSub = (app.pushSubscriptions||[]).some(s => s.mIdx === mIdx);
+  if (!heeftSub) { kopieerTekst(mIdx); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Bezig…'; }
+  const gelukt = await stuurPushNaarMonteur(mIdx);
+  if (btn) {
+    btn.textContent = gelukt ? '✓ Verstuurd' : '✕ Mislukt';
+    btn.style.background = gelukt ? 'var(--green)' : 'var(--red)';
+    setTimeout(() => { btn.disabled = false; btn.textContent = '🔔 Stuur'; btn.style.background = ''; }, 3000);
+  }
+  toast(gelukt ? `✓ Herinnering verstuurd naar ${naam}` : `Sturen mislukt`);
+}
+
+async function stuurHerinneringAllen() {
+  const overzicht = app.monteurs.map((m, mIdx) => ({ mIdx, missend: getMissendeWerkdagen(mIdx), heeftSub: (app.pushSubscriptions||[]).some(s => s.mIdx === mIdx) })).filter(o => o.missend.length > 0 && o.heeftSub);
+  if (overzicht.length === 0) { toast('Geen monteurs met push en ontbrekende uren'); return; }
+  let gelukt = 0;
+  for (const o of overzicht) { const ok = await stuurPushNaarMonteur(o.mIdx); if (ok) gelukt++; }
+  toast(`✓ ${gelukt} van ${overzicht.length} herinneringen verstuurd`);
+}
+
+function kopieerTekst(mIdx) {
+  const naam = app.monteurs[mIdx]?.naam || '?';
+  const tekst = getFallbackTekst(naam);
+  navigator.clipboard.writeText(tekst).then(() => { toast('✓ Tekst gekopieerd'); }).catch(() => { toast('Selecteer de tekst en kopieer handmatig'); });
+}
+
+function openMedewerkerDash() {
+  const m = app.medewerkers[session.idx];
+  const h = new Date().getHours();
+  document.getElementById('mw-greeting').textContent = h<12?'Goedemorgen':h<18?'Goedemiddag':'Goedenavond';
+  document.getElementById('mw-name').textContent = m.naam;
+  document.getElementById('mw-date').textContent = new Date().toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
+  mwActiveTab='wo'; updateMWTabs(); renderMWWerkorders();
+  showScreen('screen-medew');
+}
+function mwTab(t) { mwActiveTab=t; updateMWTabs(); ({wo:renderMWWerkorders,werkz:renderMWWerkzaamheden,uren:renderMWUren,vak:renderMWVakantie,export:renderMWExport,inst:renderMWInst}[t])(); }
+function updateMWTabs() {
+  ['wo','werkz','uren','vak','export','inst'].forEach(t=>document.getElementById('mwtab-'+t)?.classList.toggle('active',t===mwActiveTab));
+  const pendingCount=(app.vakantieAanvragen||[]).filter(v=>v.status==='pending').length;
+  const lbl=document.getElementById('mwtab-vak-label');
+  if(lbl) lbl.innerHTML=pendingCount>0?`Vakantie <span style="background:var(--orange);color:#111;border-radius:10px;padding:1px 5px;font-size:9px;font-weight:700;vertical-align:middle;">${pendingCount}</span>`:'Vakantie';
+}
+
+function renderMWWerkorders() {
+  let html = `
+    <div class="section-title">Nieuwe werkorder</div>
+    <div class="card">
+      <input class="input-field" id="mw-wo-naam" placeholder="Naam werkorder" />
+      <div class="card-label">Omschrijving</div>
+      <textarea class="textarea-field" id="mw-wo-omschrijving" placeholder="Beschrijf wat de monteur moet doen…"></textarea>
+      <div class="card-label">Koppel aan monteur(s) — optioneel</div>
+      <div style="margin-bottom:12px;">${app.monteurs.length===0?'<span style="font-size:13px;color:var(--text3);">Geen monteurs aangemaakt</span>':
+        app.monteurs.map((m,i)=>`<label style="display:inline-flex;align-items:center;gap:6px;margin:0 12px 6px 0;font-size:14px;cursor:pointer;">
+          <input type="checkbox" value="${i}" id="mw-mc-${i}" style="accent-color:var(--accent);"> ${m.naam}
+        </label>`).join('')}
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="mwAddWO()">+ Werkorder toevoegen</button>
+    </div>
+    <div class="section-title">Bestaande werkorders (${app.werkorders.length})</div>`;
+  if (app.werkorders.length===0) html+='<div class="empty-state"><div class="empty-icon">📁</div><p>Nog geen werkorders.</p></div>';
+  else app.werkorders.forEach((w,i)=>{
+    const namen = (w.monteurIdxs||[]).map(mi=>app.monteurs[mi]?.naam).filter(Boolean);
+    html+=`<div class="wo-item">
+      <div style="flex:1;"><div class="wo-name">${w.naam}</div>${w.omschrijving?`<div class="wo-omschrijving">${w.omschrijving}</div>`:''}<div class="wo-monteurs">${namen.length>0?namen.map(n=>`<span class="badge badge-blue">${n}</span>`).join(''):'<span class="badge badge-gray">Alle monteurs</span>'}</div></div>
+      <button class="btn btn-sm btn-ghost" style="color:var(--red);border-color:rgba(232,85,85,.4);flex-shrink:0;" onclick="mwDelWO(${i})">✕</button>
+    </div>`;
+  });
+  document.getElementById('mw-body').innerHTML = html;
+}
+
+function mwAddWO() {
+  const naam = document.getElementById('mw-wo-naam').value.trim();
+  const omschrijving = document.getElementById('mw-wo-omschrijving').value.trim();
+  if (!naam){toast('Vul een naam in');return;}
+  const monteurIdxs = [...document.querySelectorAll('[id^="mw-mc-"]:checked')].map(c=>parseInt(c.value));
+  app.werkorders.push({naam, omschrijving, monteurIdxs});
+  syncSave(); toast('✓ Werkorder toegevoegd'); renderMWWerkorders();
+}
+
+function renderMWWerkzaamheden() {
+  const regs = app.registraties.filter(r=>r.eind && r.type!=='vrij');
+  let html = '<div class="section-title">Uitgevoerde werkzaamheden</div>';
+  if (regs.length===0) {
+    html += '<div class="empty-state"><div class="empty-icon">✏️</div><p>Nog geen afgeronde registraties.</p></div>';
+  } else {
+    [...regs].reverse().forEach((r,_) => {
+      const ri = app.registraties.indexOf(r);
+      const monteur = app.monteurs[r.mIdx]?.naam || '?';
+      const wo = r.woNaam||(r.woIdx!=null?app.werkorders[r.woIdx]?.naam:null)||'?';
+      const d = new Date(r.start).toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'});
+      const t1 = new Date(r.start).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+      const t2 = new Date(r.eind).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+      html += `<div class="card" style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div>
+            <div style="font-size:15px;font-weight:600;">${monteur}</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:2px;">📁 ${wo}</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px;">${d} · ${t1}–${t2}</div>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--green);font-weight:500;">${fmtUur(werkTijd(r))}</div>
+        </div>
+        ${r.werkzaamheden ? `<div style="background:var(--bg3);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;color:var(--accent);margin-bottom:8px;line-height:1.5;">✏️ <strong>Monteur:</strong> ${r.werkzaamheden}</div>` : '<div style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;color:var(--orange);margin-bottom:8px;">⚠️ Geen werkzaamheden ingevuld</div>'}
+        <div class="card-label">Omschrijving kantoor</div>
+        <textarea class="textarea-field" id="mw-omschr-${ri}" rows="2" placeholder="Voeg kantooromschrijving toe…">${r.omschrijving||''}</textarea>
+        <button class="btn btn-primary btn-sm" onclick="mwSlaOmschrijvingOp(${ri})">💾 Opslaan</button>
+      </div>`;
+    });
+  }
+  document.getElementById('mw-body').innerHTML = html;
+}
+
+function mwSlaOmschrijvingOp(ri) {
+  const val = document.getElementById('mw-omschr-'+ri)?.value.trim();
+  if (val === undefined) return;
+  app.registraties[ri].omschrijving = val;
+  syncSave(); toast('✓ Omschrijving opgeslagen');
+}
+
+function mwDelWO(i) {
+  app.werkorders.splice(i,1); syncSave(); toast('✓ Werkorder verwijderd'); renderMWWerkorders();
+}
+
+function renderMWUren() {
+  if (!mwUrenWeek) mwUrenWeek = datumToWeekKey(new Date(vorigeWeekMaandag()+'T12:00').getTime());
+  const weekOpties = alleWekenVanJaar();
+  const sel = weekOpties.find(w=>w.key===mwUrenWeek) ? mwUrenWeek : weekOpties[weekOpties.length-2]?.key || weekOpties[0]?.key;
+  mwUrenWeek = sel;
+  const dropdownHTML = `<select class="select-field" id="mw-uren-week-sel" onchange="mwUrenWeekWijzig(this.value)">
+    ${weekOpties.map(w=>`<option value="${w.key}" ${w.key===mwUrenWeek?'selected':''}>${w.label}${isWeekGesloten(w.maMs)?'  🔒':''}</option>`).join('')}
+  </select>`;
+  const monteurFilterHTML = `<div class="filter-row" style="flex-wrap:wrap;gap:6px;margin-top:8px;margin-bottom:0;">
+    <div class="chip ${mwUrenFilter===-1?'active':''}" onclick="mwUrenMonteurFilter(-1)">Iedereen</div>
+    ${app.monteurs.map((m,i)=>`<div class="chip ${mwUrenFilter===i?'active':''}" onclick="mwUrenMonteurFilter(${i})">${m.naam}</div>`).join('')}
+  </div>`;
+  document.getElementById('mw-body').innerHTML = `<div style="margin-bottom:10px;">${dropdownHTML}${monteurFilterHTML}</div><div id="mw-uren-inhoud"></div>`;
+  mwUrenRenderInhoud();
+}
+
+function mwUrenWeekWijzig(key) { mwUrenWeek = key; mwUrenRenderInhoud(); }
+function mwUrenMonteurFilter(mIdx) {
+  mwUrenFilter = mIdx;
+  document.querySelectorAll('#mw-body .filter-row .chip').forEach((c,i)=>c.classList.toggle('active',i===(mIdx+1)));
+  mwUrenRenderInhoud();
+}
+
+function mwUrenRenderInhoud() {
+  const weekInfo = alleWekenVanJaar().find(w=>w.key===mwUrenWeek);
+  if (!weekInfo) return;
+  const {maMs, zoMs} = weekInfo;
+  const alleRegs = app.registraties.filter(r=>r.eind && r.start>=maMs && r.start<=zoMs);
+  const monteurLijst = mwUrenFilter===-1 ? app.monteurs.map((_,i)=>i) : [mwUrenFilter];
+  let html = '';
+  let totaalWeekMs = 0;
+  let aantlRegsTotaal = 0;
+  monteurLijst.forEach(mIdx => {
+    const m = app.monteurs[mIdx]; if (!m) return;
+    const mRegs = alleRegs.filter(r=>r.mIdx===mIdx);
+    const werkMs = mRegs.filter(r=>r.type!=='vrij').reduce((s,r)=>s+werkTijd(r),0);
+    totaalWeekMs += werkMs; aantlRegsTotaal += mRegs.length;
+    const heeftUren = mRegs.length > 0;
+    html += `<div class="card" style="margin-bottom:12px;${!heeftUren?'border-left:3px solid var(--red);':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:${heeftUren?'10':'0'}px;">
+        <div>
+          <div style="font-size:15px;font-weight:600;">${m.naam}</div>
+          ${heeftUren?`<div style="font-size:13px;color:var(--green);font-family:'DM Mono',monospace;margin-top:2px;">${fmtUur(werkMs)}</div>`:`<div style="font-size:13px;color:var(--red);margin-top:3px;">⚠️ Geen uren ingevuld</div>`}
+        </div>
+      </div>
+      ${heeftUren ? mRegs.sort((a,b)=>a.start-b.start).map(r=>{
+        const ri = app.registraties.indexOf(r);
+        const gesloten = isWeekGesloten(r.start);
+        const aanpasBtn = gesloten ? `<div style="font-size:11px;color:var(--text3);margin-top:-4px;margin-bottom:6px;padding:2px 8px;">🔒 Week afgesloten</div>` : `<button class="btn btn-sm btn-ghost" style="margin-top:-4px;margin-bottom:6px;font-size:11px;padding:5px 10px;" onclick="admEditReg(${ri})">✏️ Aanpassen</button>`;
+        return logItemHTML(r,false,true) + aanpasBtn;
+      }).join('') : ''}
+    </div>`;
+  });
+  if (mwUrenFilter === -1 && monteurLijst.length > 1) {
+    html += `<div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px 15px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:600;color:var(--text2);">Totaal week</div>
+      <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:600;color:var(--green);">${fmtUur(totaalWeekMs)}</div>
+    </div>`;
+  }
+  html += `<button class="btn btn-success" onclick="mwUrenExporteer()">📥 CSV exporteren</button>`;
+  const inhoud = document.getElementById('mw-uren-inhoud');
+  if (inhoud) inhoud.innerHTML = html;
+}
+
+function mwUrenExporteer() {
+  const weekInfo = alleWekenVanJaar().find(w=>w.key===mwUrenWeek);
+  if (!weekInfo) return;
+  const {maMs, zoMs} = weekInfo;
+  let regs = app.registraties.filter(r=>r.eind && r.start>=maMs && r.start<=zoMs);
+  if (mwUrenFilter !== -1) regs = regs.filter(r=>r.mIdx===mwUrenFilter);
+  if (regs.length===0){toast('Geen registraties');return;}
+  const weekNr = isoWeek(new Date(maMs));
+  const jaar = new Date(maMs).getFullYear();
+  const mNaam = mwUrenFilter!==-1 ? '_'+(app.monteurs[mwUrenFilter]?.naam||'').replace(/\s/g,'_') : '';
+  doExportCSV(regs, `uren_week${weekNr}_${jaar}${mNaam}`, expFormaat);
+}
+
+function renderMWExport() {
+  if (!mwExportWeek) mwExportWeek = datumToWeekKey(new Date(vorigeWeekMaandag()+'T12:00').getTime());
+  const weekOpties = alleWekenVanJaar();
+  const sel = weekOpties.find(w=>w.key===mwExportWeek) ? mwExportWeek : weekOpties[weekOpties.length-2]?.key || weekOpties[0]?.key;
+  mwExportWeek = sel;
+  const dropdownHTML = `<select class="select-field" id="mw-exp-week-sel" onchange="mwExpUpdatePreview()">
+    ${weekOpties.map(w=>`<option value="${w.key}" ${w.key===mwExportWeek?'selected':''}>${w.label}${isWeekGesloten(w.maMs)?'  🔒':''}</option>`).join('')}
+  </select>`;
+  const monteurDropdown = `<select class="select-field" id="mw-exp-monteur-sel" onchange="mwExpUpdatePreview()">
+    <option value="-1" ${mwExportMonteur===-1?'selected':''}>Alle monteurs</option>
+    ${app.monteurs.map((m,i)=>`<option value="${i}" ${mwExportMonteur===i?'selected':''}>${m.naam}</option>`).join('')}
+  </select>`;
+
+  // Dag dropdown — only shown when expFormaat === 'dag'
+  const dagDropdown = `<select class="select-field" id="mw-exp-dag-sel" onchange="mwExpUpdatePreview()">
+    <option value="0" ${mwExportDag===0?'selected':''}>Alle werkdagen</option>
+    <optgroup label="── Werkdagen (ma–vr) ──">
+      <option value="1" ${mwExportDag===1?'selected':''}>Maandag</option>
+      <option value="2" ${mwExportDag===2?'selected':''}>Dinsdag</option>
+      <option value="3" ${mwExportDag===3?'selected':''}>Woensdag</option>
+      <option value="4" ${mwExportDag===4?'selected':''}>Donderdag</option>
+      <option value="5" ${mwExportDag===5?'selected':''}>Vrijdag</option>
+    </optgroup>
+    <optgroup label="── Weekend (indien van toepassing) ──">
+      <option value="6" ${mwExportDag===6?'selected':''}>Zaterdag</option>
+      <option value="7" ${mwExportDag===7?'selected':''}>Zondag</option>
+    </optgroup>
+  </select>
+  <div style="font-size:12px;color:var(--text3);margin-top:-6px;margin-bottom:12px;padding:0 2px;line-height:1.5;">
+    Standaard wordt gewerkt op maandag t/m vrijdag. Weekenddagen alleen indien van toepassing.
+  </div>`;
+
+  // Export formaat toggle
+  const formaatToggle = `
+    <div class="export-format-row">
+      <span class="ef-label">Export formaat</span>
+      <div class="export-format-toggle">
+        <button class="eft-btn ${expFormaat==='dag'?'active':''}" id="mw-eft-dag" onclick="mwExpSetFormaat('dag')">Per dag</button>
+        <button class="eft-btn ${expFormaat==='week'?'active':''}" id="mw-eft-week" onclick="mwExpSetFormaat('week')">Per week</button>
+      </div>
+    </div>`;
+
+  document.getElementById('mw-body').innerHTML = `
+    ${formaatToggle}
+    <div class="section-title">Week</div>
+    ${dropdownHTML}
+    <div class="card-label">Monteur</div>
+    ${monteurDropdown}
+    <div id="mw-dag-wrap" style="display:${expFormaat==='dag'?'block':'none'};">
+      <div class="card-label">Dag</div>
+      ${dagDropdown}
+    </div>
+    <div id="mw-exp-preview" style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;margin-bottom:14px;"></div>
+    <button class="btn btn-success" onclick="mwExpDownload()">📥 CSV downloaden</button>`;
+  mwExpUpdatePreview();
+}
+
+function mwExpSetFormaat(f) {
+  expFormaat = f;
+  const dagBtn = document.getElementById('mw-eft-dag');
+  const weekBtn = document.getElementById('mw-eft-week');
+  if (dagBtn) { dagBtn.classList.toggle('active', f==='dag'); }
+  if (weekBtn) { weekBtn.classList.toggle('active', f==='week'); }
+  // Show/hide the dag dropdown
+  const dagWrap = document.getElementById('mw-dag-wrap');
+  if (dagWrap) dagWrap.style.display = f==='dag' ? 'block' : 'none';
+  mwExpUpdatePreview();
+}
+
+function mwExpGetRegs() {
+  const weekSel = document.getElementById('mw-exp-week-sel');
+  const mSel = document.getElementById('mw-exp-monteur-sel');
+  const dagSel = document.getElementById('mw-exp-dag-sel');
+  const key = weekSel ? weekSel.value : mwExportWeek;
+  const mIdx = mSel ? parseInt(mSel.value) : mwExportMonteur;
+  mwExportDag = dagSel ? parseInt(dagSel.value) : mwExportDag;
+  const weekInfo = alleWekenVanJaar().find(w=>w.key===key);
+  if (!weekInfo) return [];
+  const {maMs, zoMs} = weekInfo;
+  let regs = app.registraties.filter(r=>r.eind && r.start>=maMs && r.start<=zoMs);
+  if (mIdx >= 0) regs = regs.filter(r=>r.mIdx===mIdx);
+  // Filter by weekday when per-dag and a specific day is selected
+  // JS getDay(): 0=zo,1=ma,2=di,3=wo,4=do,5=vr,6=za
+  // Our values: 0=alle,1=ma,2=di,3=wo,4=do,5=vr,6=za,7=zo
+  if (expFormaat === 'dag' && mwExportDag > 0) {
+    const jsDay = mwExportDag === 7 ? 0 : mwExportDag; // remap 7(zo)->0
+    regs = regs.filter(r => new Date(r.start).getDay() === jsDay);
+  }
+  return regs;
+}
+
+function mwExpUpdatePreview() {
+  const weekSel = document.getElementById('mw-exp-week-sel');
+  const mSel = document.getElementById('mw-exp-monteur-sel');
+  const dagSel = document.getElementById('mw-exp-dag-sel');
+  if (weekSel) mwExportWeek = weekSel.value;
+  if (mSel) mwExportMonteur = parseInt(mSel.value);
+  if (dagSel) mwExportDag = parseInt(dagSel.value);
+  const regs = mwExpGetRegs();
+  const werkMs = regs.filter(r=>r.type!=='vrij').reduce((s,r)=>s+werkTijd(r),0);
+  const prev = document.getElementById('mw-exp-preview');
+  const dagNamen = ['','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
+  const dagLabel = expFormaat==='dag' && mwExportDag>0 ? ` — ${dagNamen[mwExportDag]}` : '';
+  const formaatLabel = expFormaat === 'dag' ? `📅 Per dag (kleinere bestanden)${dagLabel}` : '📆 Per week (samengevoegd)';
+  if (prev) prev.innerHTML = `<strong>${regs.length}</strong> registraties &nbsp;·&nbsp; <strong>${fmtUur(werkMs)}</strong> werkuren<br><span style="font-size:12px;color:var(--text2);margin-top:3px;display:block;">${formaatLabel}</span>`;
+}
+
+function mwExpDownload() {
+  const regs = mwExpGetRegs();
+  if (regs.length===0){toast('Geen registraties in deze selectie');return;}
+  const weekInfo = alleWekenVanJaar().find(w=>w.key===mwExportWeek);
+  const weekNr = weekInfo ? isoWeek(new Date(weekInfo.maMs)) : '';
+  const jaar = weekInfo ? new Date(weekInfo.maMs).getFullYear() : new Date().getFullYear();
+  const mNaam = mwExportMonteur!==-1 ? '_'+(app.monteurs[mwExportMonteur]?.naam||'').replace(/\s/g,'_') : '';
+  const dagNamen = ['','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag','zondag'];
+  const dagNaam = expFormaat==='dag' && mwExportDag>0 ? '_'+dagNamen[mwExportDag] : '';
+  doExportCSV(regs, `uren_week${weekNr}_${jaar}${mNaam}${dagNaam}`, expFormaat);
+}
+
+function renderMWInst() {
+  const m = app.medewerkers[session.idx];
+  document.getElementById('mw-body').innerHTML = `
+    <div class="section-title">Account</div>
+    <div class="si"><div><div class="si-l">${m.naam}</div><div class="si-s">Medewerker</div></div></div>
+    <div class="section-title" style="margin-top:18px;">PIN wijzigen</div>
+    <div class="card">
+      <input class="input-field" id="mwp1" type="password" inputmode="numeric" maxlength="4" placeholder="Nieuwe PIN" />
+      <input class="input-field" id="mwp2" type="password" inputmode="numeric" maxlength="4" placeholder="Herhaal PIN" />
+      <button class="btn btn-primary" onclick="mwPinWijzig()">PIN wijzigen</button>
+    </div>
+    <button class="btn btn-ghost" onclick="uitloggen()">← Uitloggen</button>`;
+}
+function mwPinWijzig(){
+  const p1=document.getElementById('mwp1').value,p2=document.getElementById('mwp2').value;
+  if(!/^\d{4}$/.test(p1)){toast('PIN moet 4 cijfers zijn');return;}
+  if(p1!==p2){toast('PINs komen niet overeen');return;}
+  app.medewerkers[session.idx].pin=p1; syncSave(); toast('✓ PIN gewijzigd');
+}
+
+function renderMWVakantie() {
+  updateMWTabs();
+  const alle = app.vakantieAanvragen || [];
+  const pending  = alle.filter(v=>v.status==='pending').length;
+  const approved = alle.filter(v=>v.status==='approved').length;
+  const rejected = alle.filter(v=>v.status==='rejected').length;
+
+  const filters = [
+    {k:'pending',  l:`⏳ In afwachting (${pending})`},
+    {k:'approved', l:`✓ Goedgekeurd (${approved})`},
+    {k:'rejected', l:`✕ Afgewezen (${rejected})`},
+    {k:'all',      l:'Alles'},
+  ];
+  const chipRow = `<div class="filter-row" style="flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+    ${filters.map(f=>`<div class="chip ${mwVakFilter===f.k?'active':''}" onclick="mwVakSetFilter('${f.k}')">${f.l}</div>`).join('')}
+  </div>`;
+
+  const monteurSel = `<select class="select-field" id="mw-vak-monteur-sel" onchange="mwVakRefresh()" style="margin-bottom:12px;">
+    <option value="-1">Alle monteurs</option>
+    ${app.monteurs.map((m,i)=>`<option value="${i}">${m.naam}</option>`).join('')}
+  </select>`;
+
+  // Month dropdown — 12 months around current month (6 back, 5 forward)
+  const maandNamen = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+  const maandOpties = [];
+  const nu = new Date();
+  for (let delta = -6; delta <= 5; delta++) {
+    const d = new Date(nu.getFullYear(), nu.getMonth() + delta, 1);
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    maandOpties.push({ key, label: `${maandNamen[d.getMonth()]} ${d.getFullYear()}` });
+  }
+  const maandSel = `
+    <div class="card-label">Maand</div>
+    <select class="select-field" id="mw-vak-maand-sel" onchange="mwVakMaandWijzig(this.value)" style="margin-bottom:14px;">
+      ${maandOpties.map(o=>`<option value="${o.key}" ${o.key===mwVakMaand?'selected':''}>${o.label}</option>`).join('')}
+    </select>`;
+
+  document.getElementById('mw-body').innerHTML =
+    chipRow + monteurSel + maandSel +
+    `<div id="mw-vak-overzicht"></div>
+     <div class="section-title" style="margin-top:18px;">Aanvragen</div>
+     <div id="mw-vak-lijst"></div>`;
+
+  mwVakRefresh();
+}
+
+// Compute how many working days of a vacation request fall within a given year-month (YYYY-MM)
+function vakDagenInMaand(aanvraag, maandKey) {
+  const [jaar, maand] = maandKey.split('-').map(Number);
+  const maandStart = new Date(jaar, maand-1, 1);
+  const maandEind  = new Date(jaar, maand, 0); // last day of month
+  const maandStartStr = maandStart.toISOString().slice(0,10);
+  const maandEindStr  = maandEind.toISOString().slice(0,10);
+  // Clamp request range to the selected month
+  const vanStr = aanvraag.van > maandStartStr ? aanvraag.van : maandStartStr;
+  const totStr = aanvraag.tot < maandEindStr  ? aanvraag.tot : maandEindStr;
+  if (vanStr > totStr) return 0;
+  return werkdagenInRange(vanStr, totStr).length;
+}
+
+// Build the monthly overview HTML
+function mwVakOverzichtHTML(maandKey, statusFilter, mIdx) {
+  const maandNamen = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+  const [jaar, maand] = maandKey.split('-').map(Number);
+  const maandNaam = maandNamen[maand-1] + ' ' + jaar;
+
+  const alle = app.vakantieAanvragen || [];
+  // Apply status + monteur filter, then keep only those with days in the selected month
+  const gefilterd = alle
+    .filter(v => statusFilter==='all' || v.status===statusFilter)
+    .filter(v => mIdx===-1 || v.mIdx===mIdx)
+    .map(v => ({ ...v, dagenInMaand: vakDagenInMaand(v, maandKey) }))
+    .filter(v => v.dagenInMaand > 0)
+    .sort((a,b) => a.van.localeCompare(b.van));
+
+  const totalDagen = gefilterd.reduce((s,v)=>s+v.dagenInMaand, 0);
+  const aantalMonteurs = new Set(gefilterd.map(v=>v.mIdx)).size;
+
+  const statusMap = { pending:'vak-pending', approved:'vak-approved', rejected:'vak-rejected' };
+  const statusLbl = { pending:'⏳ In afwachting', approved:'✓ Goedgekeurd', rejected:'✕ Afgewezen' };
+
+  let html = `<div style="margin-bottom:4px;">
+    <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Overzicht vakantiedagen</div>`;
+
+  if (gefilterd.length === 0) {
+    html += `<div class="empty-state" style="padding:20px 0 10px;">
+      <div class="empty-icon">📅</div>
+      <p>Geen vakantiedagen in deze maand.</p>
+    </div>`;
+  } else {
+    html += `<div style="font-size:12px;color:var(--text2);margin-bottom:10px;">
+      ${aantalMonteurs} monteur${aantalMonteurs!==1?'s':''} &nbsp;·&nbsp; ${totalDagen} vakantiedag${totalDagen!==1?'en':''} in ${maandNaam}
+    </div>`;
+    gefilterd.forEach(v => {
+      const monteurNaam = app.monteurs[v.mIdx]?.naam || '?';
+      const vanFmt = new Date(v.van).toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+      const totFmt = new Date(v.tot).toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+      const isSame = v.van === v.tot;
+      const periodeStr = isSame ? vanFmt : `${vanFmt} t/m ${totFmt}`;
+      html += `<div class="log-item" style="margin-bottom:8px;">
+        <div class="log-top">
+          <div class="log-project">👷 ${monteurNaam}</div>
+          <span class="vak-badge ${statusMap[v.status]||'vak-pending'}" style="font-size:11px;padding:3px 8px;">${statusLbl[v.status]||v.status}</span>
+        </div>
+        <div class="log-meta" style="margin-top:4px;">📅 ${periodeStr}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--green);margin-top:3px;">${v.dagenInMaand} vakantiedag${v.dagenInMaand!==1?'en':''} in ${maandNaam}</div>
+        ${v.soortNaam?`<div style="font-size:12px;color:var(--text3);margin-top:2px;">🏷 ${v.soortNaam}</div>`:''}
+        ${v.toelichting?`<div style="font-size:12px;color:var(--text3);margin-top:2px;">💬 ${v.toelichting}</div>`:''}
+      </div>`;
+    });
+  }
+  html += '</div>';
+  return html;
+}
+
+function mwVakRefresh() {
+  const maandSel   = document.getElementById('mw-vak-maand-sel');
+  const monteurSel = document.getElementById('mw-vak-monteur-sel');
+  if (maandSel)   mwVakMaand = maandSel.value;
+  const mIdx = monteurSel ? parseInt(monteurSel.value) : -1;
+
+  // Update monthly overview
+  const overzicht = document.getElementById('mw-vak-overzicht');
+  if (overzicht) overzicht.innerHTML = mwVakOverzichtHTML(mwVakMaand, mwVakFilter, mIdx);
+
+  // Update request list
+  const alle = app.vakantieAanvragen || [];
+  const gefilterd = mwVakFilter==='all' ? alle : alle.filter(v=>v.status===mwVakFilter);
+  const gesorteerd = [...gefilterd].filter(v=>mIdx===-1||v.mIdx===mIdx).sort((a,b)=>b.aangemaaktOp-a.aangemaaktOp);
+  const lijst = document.getElementById('mw-vak-lijst');
+  if (!lijst) return;
+  lijst.innerHTML = gesorteerd.length===0
+    ? `<div class="empty-state"><div class="empty-icon">🏖</div><p>Geen aanvragen.</p></div>`
+    : gesorteerd.map(v=>vakBlokCardHTML(v,true,true)).join('');
+}
+
+function mwVakMaandWijzig(key) {
+  mwVakMaand = key;
+  mwVakRefresh();
+}
+
+function mwVakSetFilter(f) { mwVakFilter=f; renderMWVakantie(); }
+function mwVakMonteurRefresh() { mwVakRefresh(); }
+
+// ═══════════════════════ ADMIN ═══════════════════════
+
+const ADM_TABS = ['monteurs','medewerkers','werkorders','vrijcodes','vakantie','log'];
+let admVakFilter = 'pending';
+function renderAdmin() {
+  const tabs = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:16px 0 0;margin-bottom:16px;">
+    ${ADM_TABS.map(t=>`<div class="chip ${admTab===t?'active':''}" onclick="admSetTab('${t}')" style="text-align:center;white-space:normal;line-height:1.3;">${((()=>{const lb={monteurs:'👷 Monteurs',medewerkers:'💼 Medewerkers',werkorders:'📁 Werkorders',vrijcodes:'🏷 Vrij',vakantie:'🏖 Vakantie',log:'📋 Logboek'};const pc=t==='vakantie'?(app.vakantieAanvragen||[]).filter(v=>v.status==='pending').length:0;return lb[t]+(pc>0?` <span style="background:var(--orange);color:#111;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">${pc}</span>`:'');})())}</div>`).join('')}
+  </div>`;
+  let content = '';
+  if (admTab==='monteurs') content = renderAdmMonteurs();
+  else if (admTab==='medewerkers') content = renderAdmMedewerkers();
+  else if (admTab==='werkorders') content = renderAdmWerkorders();
+  else if (admTab==='vrijcodes') content = renderAdmVrijcodes();
+  else if (admTab==='vakantie') content = renderAdmVakantie();
+  else content = renderAdmLog();
+  document.getElementById('adm-body').innerHTML = tabs + content;
+}
+function admSetTab(t) { admTab=t; renderAdmin(); }
+
+function renderAdmMonteurs() {
+  const lijst = app.monteurs.length===0?'<div class="empty-state" style="padding:12px 0;"><p>Geen monteurs.</p></div>':
+    app.monteurs.map((m,i)=>{
+      const type = m.registratieType||'timer';
+      return `<div class="si" style="margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <div class="si-l">${m.naam}</div>
+          <div class="si-s">PIN: ${'•'.repeat(m.pin.length)} · <span style="color:${type==='handmatig'?'var(--purple)':'var(--green)'};">${type==='handmatig'?'✍ Handmatig':'⏱ Timer'}</span></div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+          <button class="btn btn-sm btn-ghost" style="font-size:12px;padding:6px 10px;" onclick="admToggleRegType(${i})">${type==='handmatig'?'→ Timer':'→ Handmatig'}</button>
+          <button class="btn btn-sm btn-danger" onclick="admDel('monteurs',${i})">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  return lijst + `<div class="card" style="margin-top:12px;">
+    <div class="card-label">Nieuwe monteur</div>
+    <input class="input-field" id="adm-m-naam" placeholder="Naam" />
+    <input class="input-field" id="adm-m-pin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN (4 cijfers)" />
+    <div class="card-label">Registratiemethode</div>
+    <select class="select-field" id="adm-m-regtype">
+      <option value="timer">⏱ Timer</option>
+      <option value="handmatig">✍ Handmatig</option>
+    </select>
+    <button class="btn btn-success btn-sm" onclick="admAddGebruiker('monteur')">+ Toevoegen</button>
+  </div>`;
+}
+
+function admToggleRegType(i) {
+  const m = app.monteurs[i];
+  m.registratieType = (m.registratieType||'timer') === 'timer' ? 'handmatig' : 'timer';
+  syncSave(); toast('✓ ' + m.naam + ' → ' + m.registratieType); renderAdmin();
+}
+
+function renderAdmMedewerkers() {
+  const lijst = app.medewerkers.length===0?'<div class="empty-state" style="padding:12px 0;"><p>Geen medewerkers.</p></div>':
+    app.medewerkers.map((m,i)=>`<div class="si" style="margin-bottom:8px;">
+      <div><div class="si-l">${m.naam}</div><div class="si-s">PIN: ${'•'.repeat(m.pin.length)}</div></div>
+      <button class="btn btn-sm btn-danger" onclick="admDel('medewerkers',${i})">✕</button>
+    </div>`).join('');
+  return lijst + `<div class="card" style="margin-top:12px;">
+    <div class="card-label">Nieuwe medewerker</div>
+    <input class="input-field" id="adm-mw-naam" placeholder="Naam" />
+    <input class="input-field" id="adm-mw-pin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN (4 cijfers)" />
+    <button class="btn btn-purple btn-sm" onclick="admAddGebruiker('medewerker')">+ Toevoegen</button>
+  </div>`;
+}
+
+function renderAdmWerkorders() {
+  const lijst = app.werkorders.length===0?'<div class="empty-state" style="padding:12px 0;"><p>Geen werkorders.</p></div>':
+    app.werkorders.map((w,i)=>`<div class="wo-item">
+      <div style="flex:1;"><div class="wo-name">${w.naam}</div>${w.omschrijving?`<div class="wo-omschrijving">${w.omschrijving}</div>`:''}</div>
+      <button class="btn btn-sm btn-ghost" style="color:var(--red);" onclick="admDel('werkorders',${i})">✕</button>
+    </div>`).join('');
+  return lijst + `<div class="card" style="margin-top:12px;">
+    <div class="card-label">Nieuwe werkorder</div>
+    <input class="input-field" id="adm-wo-naam" placeholder="Naam" />
+    <button class="btn btn-primary btn-sm" onclick="admAddWO()">+ Toevoegen</button>
+  </div>`;
+}
+
+function renderAdmVrijcodes() {
+  const lijst = app.vrijCodes.length===0?'<div class="empty-state" style="padding:12px 0;"><p>Geen codes.</p></div>':
+    `<div class="vrij-grid">${app.vrijCodes.map((c,i)=>`
+      <div class="vrij-btn kleur-${c.kleur}" style="position:relative;">
+        <div class="vb-code">${c.code}</div>
+        <div class="vb-naam">${c.naam}</div>
+        <button onclick="admDel('vrijCodes',${i})" style="position:absolute;top:6px;right:8px;background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;">×</button>
+      </div>`).join('')}
+    </div>`;
+  return lijst + `<div class="card" style="margin-top:12px;">
+    <div class="card-label">Nieuwe code</div>
+    <input class="input-field" id="adm-vc-code" placeholder="Code (bijv. MAG)" maxlength="5" />
+    <input class="input-field" id="adm-vc-naam" placeholder="Naam" />
+    <div class="card-label">Kleur</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      ${KLEUREN.map(k=>`<label style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:13px;">
+        <input type="radio" name="vc-kleur" value="${k}" ${k==='blue'?'checked':''} style="accent-color:var(--accent);">
+        <span style="text-transform:capitalize;">${k}</span></label>`).join('')}
+    </div>
+    <button class="btn btn-teal btn-sm" onclick="admAddVrijCode()">+ Code toevoegen</button>
+  </div>`;
+}
+
+function renderAdmVakantie() {
+  const alle=app.vakantieAanvragen||[];
+  const pending=alle.filter(v=>v.status==='pending').length;
+  const approved=alle.filter(v=>v.status==='approved').length;
+  const rejected=alle.filter(v=>v.status==='rejected').length;
+  const filters=[{k:'pending',l:`⏳ In afwachting (${pending})`},{k:'approved',l:`✓ Goedgekeurd (${approved})`},{k:'rejected',l:`✕ Afgewezen (${rejected})`},{k:'all',l:'Alles'}];
+  const chipRow=`<div class="filter-row" style="flex-wrap:wrap;gap:6px;margin-bottom:12px;">${filters.map(f=>`<div class="chip ${admVakFilter===f.k?'active':''}" onclick="admVakSetFilter('${f.k}')">${f.l}</div>`).join('')}</div>`;
+  const monteurSel=`<select class="select-field" id="adm-vak-monteur-sel" onchange="admVakMonteurRefresh()" style="margin-bottom:12px;"><option value="-1">Alle monteurs</option>${app.monteurs.map((m,i)=>`<option value="${i}">${m.naam}</option>`).join('')}</select>`;
+  const gefilterd=admVakFilter==='all'?alle:alle.filter(v=>v.status===admVakFilter);
+  const gesorteerd=[...gefilterd].sort((a,b)=>b.aangemaaktOp-a.aangemaaktOp);
+  let itemsHTML='<div id="adm-vak-lijst">';
+  if(gesorteerd.length===0) itemsHTML+=`<div class="empty-state"><div class="empty-icon">🏖</div><p>Geen aanvragen.</p></div>`;
+  else gesorteerd.forEach(v=>{itemsHTML+=vakBlokCardHTML(v,true,true);});
+  itemsHTML+='</div>';
+  return chipRow+monteurSel+itemsHTML;
+}
+
+function admVakSetFilter(f) { admVakFilter=f; renderAdmin(); }
+function admVakMonteurRefresh() {
+  const mIdx=parseInt(document.getElementById('adm-vak-monteur-sel')?.value??'-1');
+  const alle=app.vakantieAanvragen||[];
+  const gefilterd=admVakFilter==='all'?alle:alle.filter(v=>v.status===admVakFilter);
+  const gesorteerd=[...gefilterd].filter(v=>mIdx===-1||v.mIdx===mIdx).sort((a,b)=>b.aangemaaktOp-a.aangemaaktOp);
+  const lijst=document.getElementById('adm-vak-lijst');
+  if(!lijst) return;
+  lijst.innerHTML=gesorteerd.length===0?`<div class="empty-state"><div class="empty-icon">🏖</div><p>Geen aanvragen gevonden.</p></div>`:gesorteerd.map(v=>vakBlokCardHTML(v,true,true)).join('');
+}
+
+let admLogPeriode = 'week';
+let admLogMonteur = -1;
+function renderAdmLog() {
+  const filterHTML = periodeFilterHTML('admLog', admLogPeriode, true, admLogMonteur);
+  const lijstHTML = admLogGetLijst();
+  const sluitHTML = renderWeekSluitPanel();
+  return `${sluitHTML}<div style="margin-bottom:14px;">${filterHTML}</div>
+    <div id="admlog-lijst">${lijstHTML}</div>
+    <button class="btn btn-ghost" style="margin-top:4px;" onclick="openExportModal()">📥 CSV exporteren</button>`;
+}
+
+function renderWeekSluitPanel() {
+  const nu = new Date();
+  const weken = [];
+  for (let i = 0; i < 8; i++) {
+    const d = new Date(nu); d.setDate(nu.getDate() - i*7);
+    const key = datumToWeekKey(d.getTime());
+    if (!weken.find(w=>w.key===key)) weken.push({key, label: weekLabel(key)});
+  }
+  const geslotenLijst = (app.geslotenWeken||[]).slice().sort().reverse();
+  const dropdownOpties = weken.map(w=>{
+    const isGesloten = (app.geslotenWeken||[]).includes(w.key);
+    return `<option value="${w.key}">${w.label}${isGesloten?' 🔒':''}</option>`;
+  }).join('');
+
+  const aantalGesloten = geslotenLijst.length;
+  const geslotenItems = aantalGesloten === 0
+    ? '<div style="font-size:13px;color:var(--text3);padding:8px 0 4px;">Geen weken gesloten.</div>'
+    : geslotenLijst.map(key=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.2);border-radius:var(--radius-sm);margin-bottom:6px;">
+          <span style="font-size:13px;font-weight:500;">🔒 ${weekLabel(key)}</span>
+          <button class="btn btn-sm btn-ghost" style="font-size:12px;padding:5px 10px;" onclick="admWeekHeropenen('${key}')">🔓 Heropenen</button>
+        </div>`).join('');
+
+  return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:15px;margin-bottom:18px;">
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px;">🔒 Weken sluiten & heropenen</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <select class="select-field" id="adm-week-sel" style="margin-bottom:0;flex:1;">${dropdownOpties}</select>
+      <button class="btn btn-warning btn-sm" style="white-space:nowrap;flex-shrink:0;" onclick="admWeekSluiten()">🔒 Sluiten</button>
+    </div>
+
+    <!-- Collapsible gesloten weken tab -->
+    <div style="border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+      <button onclick="admToggleGeslotenLijst()" id="adm-gesloten-toggle"
+        style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 13px;background:var(--bg3);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text);">
+        <span>📋 Gesloten weken ${aantalGesloten > 0 ? `<span style="background:rgba(245,166,35,.2);color:var(--orange);border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;margin-left:4px;">${aantalGesloten}</span>` : ''}</span>
+        <span id="adm-gesloten-chevron" style="font-size:12px;color:var(--text2);transition:transform .2s;">▼</span>
+      </button>
+      <div id="adm-gesloten-lijst" style="display:none;padding:10px 12px 4px;">
+        ${geslotenItems}
+      </div>
+    </div>
+  </div>`;
+}
+
+function admToggleGeslotenLijst() {
+  const lijst = document.getElementById('adm-gesloten-lijst');
+  const chevron = document.getElementById('adm-gesloten-chevron');
+  if (!lijst) return;
+  const isOpen = lijst.style.display !== 'none';
+  lijst.style.display = isOpen ? 'none' : 'block';
+  if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+function admWeekSluiten() {
+  const sel = document.getElementById('adm-week-sel'); if (!sel) return;
+  const key = sel.value;
+  if (!app.geslotenWeken) app.geslotenWeken = [];
+  if (app.geslotenWeken.includes(key)) { toast('Al gesloten'); return; }
+  app.geslotenWeken.push(key); syncSave(); toast(`🔒 ${weekLabel(key)} afgesloten`); renderAdmin();
+}
+
+function admWeekHeropenen(key) {
+  if (!app.geslotenWeken) return;
+  app.geslotenWeken = app.geslotenWeken.filter(w=>w!==key);
+  syncSave(); toast(`🔓 ${weekLabel(key)} heropend`); renderAdmin();
+}
+
+function admLogSetPeriode(p) { admLogPeriode = p; renderAdmin(); const sel = document.getElementById('admLog-monteur'); if (sel) sel.value = admLogMonteur; }
+function admLogRefresh() {
+  const sel = document.getElementById('admLog-monteur');
+  if (sel) admLogMonteur = parseInt(sel.value);
+  const lijst = document.getElementById('admlog-lijst');
+  if (lijst) lijst.innerHTML = admLogGetLijst();
+}
+function admLogGetLijst() {
+  const van = document.getElementById('admLog-van')?.value;
+  const tot = document.getElementById('admLog-tot')?.value;
+  const [van_ms, tot_ms] = periodeRange(admLogPeriode, van, tot);
+  const sel = document.getElementById('admLog-monteur');
+  const mIdx = sel ? parseInt(sel.value) : admLogMonteur;
+  const regs = app.registraties.filter(r=>r.eind && r.start>=van_ms && r.start<=tot_ms && (mIdx===-1 || r.mIdx===mIdx));
+  if (regs.length===0) return '<div class="empty-state"><div class="empty-icon">📋</div><p>Geen registraties.</p></div>';
+  const werkMs = regs.filter(r=>r.type!=='vrij').reduce((s,r)=>s+werkTijd(r),0);
+  const totaalHTML = `<div class="stats-grid" style="margin-bottom:12px;">
+    <div class="stat-card"><div class="val">${fmtUur(werkMs)}</div><div class="lbl">Werkuren</div></div>
+    <div class="stat-card"><div class="val">${regs.length}</div><div class="lbl">Registraties</div></div>
+  </div>`;
+  const lijstHTML = [...regs].reverse().map(r=>{
+    const ri = app.registraties.indexOf(r);
+    const slotBadge = isWeekGesloten(r.start) ? ' <span style="font-size:10px;background:rgba(245,166,35,.15);color:var(--orange);border-radius:6px;padding:1px 6px;vertical-align:middle;">🔒</span>' : '';
+    return logItemHTML(r,true,true) + `<button class="btn btn-sm btn-ghost" style="margin-top:-6px;margin-bottom:10px;font-size:12px;" onclick="admEditReg(${ri})">✏️ Aanpassen${slotBadge}</button>`;
+  }).join('');
+  return totaalHTML + lijstHTML;
+}
+
+function admAddGebruiker(rol) {
+  const isMW = rol==='medewerker';
+  const naam = document.getElementById(isMW?'adm-mw-naam':'adm-m-naam').value.trim();
+  const pin = document.getElementById(isMW?'adm-mw-pin':'adm-m-pin').value.trim();
+  if (!naam){toast('Vul naam in');return;}
+  if (!/^\d{4}$/.test(pin)){toast('PIN moet 4 cijfers zijn');return;}
+  const obj = {naam, pin};
+  if (!isMW) {
+    const regtype = document.getElementById('adm-m-regtype');
+    obj.registratieType = regtype ? regtype.value : 'timer';
+  }
+  app[isMW?'medewerkers':'monteurs'].push(obj);
+  syncSave(); toast('✓ Toegevoegd'); renderAdmin();
+}
+function admAddWO() {
+  const naam = document.getElementById('adm-wo-naam').value.trim();
+  if (!naam){toast('Vul naam in');return;}
+  app.werkorders.push({naam,omschrijving:'',monteurIdxs:[]}); syncSave(); toast('✓ Werkorder toegevoegd'); renderAdmin();
+}
+function admAddVrijCode() {
+  const code = document.getElementById('adm-vc-code').value.trim().toUpperCase();
+  const naam = document.getElementById('adm-vc-naam').value.trim();
+  const kleur = document.querySelector('input[name="vc-kleur"]:checked')?.value||'blue';
+  if (!code||!naam){toast('Vul code en naam in');return;}
+  if (app.vrijCodes.find(c=>c.code===code)){toast('Code bestaat al');return;}
+  app.vrijCodes.push({code,naam,kleur}); syncSave(); toast('✓ Code toegevoegd'); renderAdmin();
+}
+function admDel(lijst, i) { app[lijst].splice(i,1); syncSave(); renderAdmin(); }
+
+// ═══════════════════════ ADMIN: UREN AANPASSEN ═══════════════════════
+
+let editRegIdx = null;
+function admEditReg(idx) {
+  editRegIdx = idx;
+  const r = app.registraties[idx];
+  const isVakBlok = r.isVakBlok || false;
+  const isVrij = r.type === 'vrij';
+  document.getElementById('mer-title').textContent = isVakBlok ? '🏖 Vakantie aanpassen' : isVrij ? '📅 Vrij/intern aanpassen' : '⏱ Werkregistratie aanpassen';
+  document.getElementById('mer-info').textContent = isVakBlok ? (app.monteurs[r.mIdx]?.naam || '?') : new Date(r.start).toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const mSel = document.getElementById('mer-monteur');
+  mSel.innerHTML = app.monteurs.map((m,i)=>`<option value="${i}" ${i===r.mIdx?'selected':''}>${m.naam}</option>`).join('');
+  document.getElementById('mer-type').value = r.type || 'werk';
+  merBuildSubSelects(r);
+  const vakVelden = document.getElementById('mer-vakblok-velden');
+  const datumVelden = document.getElementById('mer-datum-velden');
+  if (isVakBlok) {
+    vakVelden.style.display = ''; datumVelden.style.display = 'none';
+    document.getElementById('mer-vak-van').value = r.vakVan || new Date(r.start).toISOString().slice(0,10);
+    document.getElementById('mer-vak-tot').value = r.vakTot || new Date(r.eind).toISOString().slice(0,10);
+    merVakPreview();
+  } else {
+    vakVelden.style.display = 'none'; datumVelden.style.display = '';
+    const startD = new Date(r.start); const eindD = new Date(r.eind);
+    const pMs = (r.pauzes||[]).reduce((s,p)=>s+(p.eind||0)-p.start,0);
+    document.getElementById('mer-datum').value = startD.toISOString().slice(0,10);
+    document.getElementById('mer-start').value = startD.toTimeString().slice(0,5);
+    document.getElementById('mer-eind').value = eindD.toTimeString().slice(0,5);
+    document.getElementById('mer-pauze').value = Math.round(pMs/60000);
+  }
+  document.getElementById('mer-werkz').value = r.werkzaamheden || '';
+  openModal('modal-edit-reg');
+}
+
+function merTypeChange() {
+  const r = app.registraties[editRegIdx] || {};
+  merBuildSubSelects(r);
+  const type = document.getElementById('mer-type').value;
+  if (type === 'werk') { document.getElementById('mer-vakblok-velden').style.display = 'none'; document.getElementById('mer-datum-velden').style.display = ''; }
+  else { merVrijCodeChange(); }
+}
+
+function merVrijCodeChange() {
+  const vrijSel = document.getElementById('mer-vrij');
+  const ci = parseInt(vrijSel.value);
+  const code = app.vrijCodes[ci];
+  const isVak = code && isMeerdaagsCode(code.code);
+  document.getElementById('mer-vakblok-velden').style.display = isVak ? '' : 'none';
+  document.getElementById('mer-datum-velden').style.display = isVak ? 'none' : '';
+  if (isVak) merVakPreview();
+}
+
+function merVakPreview() {
+  const van = document.getElementById('mer-vak-van')?.value;
+  const tot = document.getElementById('mer-vak-tot')?.value;
+  const prev = document.getElementById('mer-vak-preview');
+  if (!van || !tot || !prev) return;
+  if (tot < van) { prev.style.display='none'; return; }
+  const werkdagen = werkdagenInRange(van, tot);
+  if (werkdagen.length === 0) { prev.style.display='none'; return; }
+  const vanFmt = new Date(werkdagen[0]).toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'long'});
+  const totFmt = new Date(werkdagen[werkdagen.length-1]).toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+  prev.style.display = '';
+  prev.innerHTML = `<strong>${werkdagen.length} werkdag${werkdagen.length!==1?'en':''}</strong>${werkdagen.length>1?`<br>${vanFmt} t/m ${totFmt}`:''}`;
+}
+
+function merBuildSubSelects(r) {
+  const type = document.getElementById('mer-type').value;
+  const woSel = document.getElementById('mer-wo');
+  const vrijSel = document.getElementById('mer-vrij');
+  if (type==='werk') {
+    woSel.style.display=''; vrijSel.style.display='none';
+    woSel.innerHTML = app.werkorders.map((w,i)=>`<option value="${i}" ${i===r.woIdx?'selected':''}>${w.naam}</option>`).join('');
+  } else {
+    woSel.style.display='none'; vrijSel.style.display='';
+    vrijSel.innerHTML = app.vrijCodes.map((c,i)=>`<option value="${i}" ${c.code===r.vrijCode?'selected':''}>${c.naam}</option>`).join('');
+  }
+}
+
+function merOpslaan() {
+  const r = app.registraties[editRegIdx]; if(!r) return;
+  const type = document.getElementById('mer-type').value;
+  r.mIdx = parseInt(document.getElementById('mer-monteur').value);
+  r.type = type;
+  r.werkzaamheden = document.getElementById('mer-werkz').value.trim();
+  if (type === 'werk') {
+    r.woIdx = parseInt(document.getElementById('mer-wo').value);
+    delete r.vrijCode; delete r.vrijNaam; delete r.vrijKleur;
+    delete r.isVakBlok; delete r.vakVan; delete r.vakTot; delete r.werkdagen;
+  } else {
+    const ci = parseInt(document.getElementById('mer-vrij').value);
+    const c = app.vrijCodes[ci];
+    r.vrijCode=c.code; r.vrijNaam=c.naam; r.vrijKleur=c.kleur; delete r.woIdx;
+  }
+  const vakVeldenZichtbaar = document.getElementById('mer-vakblok-velden').style.display !== 'none';
+  if (vakVeldenZichtbaar) {
+    const van = document.getElementById('mer-vak-van').value;
+    const tot = document.getElementById('mer-vak-tot').value;
+    if (!van || !tot) { toast('Vul datums in'); return; }
+    if (tot < van) { toast('Einddatum moet na begindatum'); return; }
+    const werkdagen = werkdagenInRange(van, tot);
+    if (werkdagen.length === 0) { toast('Geen werkdagen'); return; }
+    const eersteWerkdag = werkdagen[0]; const laatsteWerkdag = werkdagen[werkdagen.length-1];
+    r.start = new Date(eersteWerkdag + 'T08:00').getTime();
+    r.eind  = new Date(laatsteWerkdag + 'T17:00').getTime();
+    r.vakVan = eersteWerkdag; r.vakTot = laatsteWerkdag;
+    r.werkdagen = werkdagen.length; r.isVakBlok = true; r.pauzes = [];
+    if (r.vakAanvraagId) {
+      const aanvraag = (app.vakantieAanvragen||[]).find(v=>v._id===r.vakAanvraagId);
+      if (aanvraag) { aanvraag.van=eersteWerkdag; aanvraag.tot=laatsteWerkdag; aanvraag.werkdagen=werkdagen.length; }
+    }
+  } else {
+    const datum = document.getElementById('mer-datum').value;
+    const startTijd = document.getElementById('mer-start').value;
+    const eindTijd = document.getElementById('mer-eind').value;
+    const pauzeMin = parseInt(document.getElementById('mer-pauze').value)||0;
+    if (!datum||!startTijd||!eindTijd){toast('Vul datum en tijden in');return;}
+    const startMs = new Date(datum+'T'+startTijd).getTime();
+    let eindMs = new Date(datum+'T'+eindTijd).getTime();
+    if (eindMs <= startMs) eindMs += 86400000;
+    if (eindMs <= startMs){toast('Eindtijd moet na starttijd');return;}
+    r.start = startMs; r.eind = eindMs;
+    r.pauzes = pauzeMin>0?[{start:startMs,eind:startMs+pauzeMin*60000}]:[];
+    delete r.isVakBlok; delete r.vakVan; delete r.vakTot; delete r.werkdagen;
+  }
+  closeModal('modal-edit-reg'); syncSave(); toast('✓ Registratie aangepast');
+  if(session.rol==='medewerker') renderMWUren(); else renderAdmin();
+}
+
+function merVerwijder() {
+  const r = app.registraties[editRegIdx]; if(!r) return;
+  const naam = app.monteurs[r.mIdx]?.naam||'?';
+  const bestaand = document.getElementById('mer-verwijder-bevestig');
+  if (bestaand) { bestaand.remove(); return; }
+  const div = document.createElement('div');
+  div.id = 'mer-verwijder-bevestig';
+  div.style.cssText = 'background:rgba(232,85,85,.1);border:1px solid rgba(232,85,85,.35);border-radius:12px;padding:13px 15px;margin-bottom:10px;';
+  div.innerHTML = `
+    <div style="font-size:14px;font-weight:600;color:var(--red);margin-bottom:6px;">⚠ Zeker verwijderen?</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">${naam}</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-danger btn-sm" style="flex:1;" onclick="merVerwijderBevestigd()">✓ Ja, verwijderen</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="document.getElementById('mer-verwijder-bevestig').remove()">Annuleren</button>
+    </div>`;
+  const verwijderBtn = [...document.querySelectorAll('#modal-edit-reg button')].find(b=>b.textContent.includes('verwijderen'));
+  if (verwijderBtn) verwijderBtn.parentNode.insertBefore(div, verwijderBtn);
+}
+
+function merVerwijderBevestigd() {
+  const r = app.registraties[editRegIdx]; if(!r) return;
+  if (r.vakAanvraagId) { app.vakantieAanvragen = (app.vakantieAanvragen||[]).filter(v=>v._id!==r.vakAanvraagId); }
+  app.registraties.splice(editRegIdx,1);
+  closeModal('modal-edit-reg'); syncSave(); toast('✓ Registratie verwijderd');
+  if(session.rol==='medewerker') renderMWUren(); else renderAdmin();
+}
+
+// ═══════════════════════ EXPORT ═══════════════════════
+
+// IMPROVEMENT 2: set export formaat from modal toggle
+function expSetFormaat(f) {
+  expFormaat = f;
+  const dagBtn = document.getElementById('eft-dag');
+  const weekBtn = document.getElementById('eft-week');
+  if (dagBtn) dagBtn.classList.toggle('active', f==='dag');
+  if (weekBtn) weekBtn.classList.toggle('active', f==='week');
+  expUpdatePreview();
+}
+
+let expType = 'week';
+
+function openExportModal() {
+  const regs = app.registraties.filter(r=>r.eind);
+  const nu = new Date();
+  const wekenSet = new Set();
+  regs.forEach(r=>{
+    const d=new Date(r.start); const ma=new Date(d);
+    ma.setDate(d.getDate()-((d.getDay()+6)%7)); ma.setHours(0,0,0,0);
+    wekenSet.add(ma.getTime());
+  });
+  const huidigeMa = new Date(nu); huidigeMa.setDate(nu.getDate()-((nu.getDay()+6)%7)); huidigeMa.setHours(0,0,0,0);
+  wekenSet.add(huidigeMa.getTime());
+  const weken = [...wekenSet].sort((a,b)=>b-a);
+  const weekSel = document.getElementById('exp-week-sel');
+  weekSel.innerHTML = weken.map(ts=>{
+    const ma=new Date(ts); const vr=new Date(ts+4*86400000);
+    const lbl=`Week ${isoWeek(ma)} — ${ma.toLocaleDateString('nl-NL',{day:'numeric',month:'short'})} t/m ${vr.toLocaleDateString('nl-NL',{day:'numeric',month:'short',year:'numeric'})}`;
+    return `<option value="${ts}">${lbl}</option>`;
+  }).join('');
+  const maandenSet = new Set();
+  regs.forEach(r=>{ const d=new Date(r.start); maandenSet.add(d.getFullYear()+'-'+(d.getMonth())); });
+  maandenSet.add(nu.getFullYear()+'-'+nu.getMonth());
+  const maanden = [...maandenSet].sort().reverse();
+  const maandNamen = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+  const maandSel = document.getElementById('exp-maand-sel');
+  maandSel.innerHTML = maanden.map(ym=>{ const [y,m]=ym.split('-'); return `<option value="${ym}">${maandNamen[parseInt(m)]} ${y}</option>`; }).join('');
+  const jarenSet = new Set();
+  regs.forEach(r=>jarenSet.add(new Date(r.start).getFullYear())); jarenSet.add(nu.getFullYear());
+  const jaren = [...jarenSet].sort().reverse();
+  const jaarSel = document.getElementById('exp-jaar-sel');
+  jaarSel.innerHTML = jaren.map(y=>`<option value="${y}">${y}</option>`).join('');
+  const mSel = document.getElementById('exp-monteur-sel');
+  mSel.innerHTML = '<option value="-1">Alle monteurs</option>' + app.monteurs.map((m,i)=>`<option value="${i}">${m.naam}</option>`).join('');
+  expType = 'week'; expSetType('week');
+
+  // Sync formaat toggle state in modal
+  const dagBtn = document.getElementById('eft-dag');
+  const weekBtn = document.getElementById('eft-week');
+  if (dagBtn) dagBtn.classList.toggle('active', expFormaat==='dag');
+  if (weekBtn) weekBtn.classList.toggle('active', expFormaat==='week');
+
+  openModal('modal-export');
+}
+
+function expSetType(t) {
+  expType = t;
+  ['week','maand','jaar','alles'].forEach(x=>{
+    const btn = document.getElementById('expt-'+x);
+    if(btn) { btn.style.background = x===t?'var(--accent)':''; btn.style.color = x===t?'#fff':''; }
+  });
+  document.getElementById('exp-week-kiezer').style.display = t==='week'?'':'none';
+  document.getElementById('exp-maand-kiezer').style.display = t==='maand'?'':'none';
+  document.getElementById('exp-jaar-kiezer').style.display = t==='jaar'?'':'none';
+  expUpdatePreview();
+}
+
+function expGetRegs() {
+  let regs = app.registraties.filter(r=>r.eind);
+  const mIdx = parseInt(document.getElementById('exp-monteur-sel')?.value??'-1');
+  if (mIdx>=0) regs = regs.filter(r=>r.mIdx===mIdx);
+  if (expType==='week') {
+    const ts = parseInt(document.getElementById('exp-week-sel').value);
+    regs = regs.filter(r=>{ const d=new Date(r.start); const ma=new Date(d); ma.setDate(d.getDate()-((d.getDay()+6)%7)); ma.setHours(0,0,0,0); return ma.getTime()===ts; });
+  } else if (expType==='maand') {
+    const ym = document.getElementById('exp-maand-sel').value; const [y,m] = ym.split('-');
+    regs = regs.filter(r=>{ const d=new Date(r.start); return d.getFullYear()===parseInt(y)&&d.getMonth()===parseInt(m); });
+  } else if (expType==='jaar') {
+    const y = parseInt(document.getElementById('exp-jaar-sel').value);
+    regs = regs.filter(r=>new Date(r.start).getFullYear()===y);
+  }
+  return regs;
+}
+
+function expUpdatePreview() {
+  const regs = expGetRegs();
+  const werkRegs = regs.filter(r=>r.type!=='vrij');
+  const totMs = werkRegs.reduce((s,r)=>s+werkTijd(r),0);
+  const prev = document.getElementById('exp-preview');
+  const formaatLabel = expFormaat === 'dag' ? '📅 Per dag (kleinere bestanden)' : '📆 Per week (samengevoegd)';
+  if(prev) prev.innerHTML = `<strong>${regs.length}</strong> registraties &nbsp;·&nbsp; <strong>${fmtUur(totMs)}</strong> werkuren<br><span style="font-size:12px;color:var(--text2);margin-top:3px;display:block;">${formaatLabel}</span>`;
+}
+
+function exportPeriode() {
+  const regs = expGetRegs();
+  if(regs.length===0){toast('Geen registraties');return;}
+  const mIdx = parseInt(document.getElementById('exp-monteur-sel').value);
+  let fname = 'uren';
+  if(expType==='week'){const d=new Date(parseInt(document.getElementById('exp-week-sel').value));fname='uren_week'+isoWeek(d)+'_'+d.getFullYear();}
+  else if(expType==='maand'){fname='uren_'+document.getElementById('exp-maand-sel').value.replace('-','_');}
+  else if(expType==='jaar'){fname='uren_'+document.getElementById('exp-jaar-sel').value;}
+  else fname='uren_alles';
+  if(mIdx>=0) fname+='_'+(app.monteurs[mIdx]?.naam||'').replace(/\s/g,'_');
+  doExportCSV(regs, fname, expFormaat);
+  closeModal('modal-export');
+}
+
+// IMPROVEMENT 2: doExportCSV now accepts formaat param ('dag' or 'week')
+// 'dag' = one file per day (smaller files, exported sequentially by date)
+// 'week' = original behaviour (all in one file)
+function doExportCSV(regs, fname, formaat = 'dag') {
+  const nu = new Date();
+
+  if (formaat === 'dag') {
+    // Group by date (YYYY-MM-DD)
+    const perDag = {};
+    regs.forEach(r => {
+      const dagKey = new Date(r.start).toISOString().slice(0,10);
+      if (!perDag[dagKey]) perDag[dagKey] = [];
+      perDag[dagKey].push(r);
+    });
+    const dagKeys = Object.keys(perDag).sort();
+    if (dagKeys.length === 0) { toast('Geen registraties'); return; }
+    // Download one CSV per day, with slight delay between downloads
+    dagKeys.forEach((dagKey, i) => {
+      setTimeout(() => {
+        const dagRegs = perDag[dagKey];
+        const dagFname = fname + '_' + dagKey;
+        _downloadCSV(dagRegs, dagFname, nu);
+      }, i * 350);
+    });
+    toast(`✓ ${dagKeys.length} CSV-bestand${dagKeys.length > 1 ? 'en' : ''} gedownload (per dag)`);
+  } else {
+    // Original: all in one file
+    _downloadCSV(regs, fname, nu);
+    toast('✓ CSV gedownload');
+  }
+}
+
+function _downloadCSV(regs, fname, nu) {
+  const rows=[['Monteur','Type','Code / Werkorder','Van datum','Tot datum','Werkdagen','Start','Eind','Uren (decimaal)','Pauze (min)','Omschrijving kantoor','Werkzaamheden monteur']];
+  regs.forEach(r=>{
+    const pMs=(r.pauzes||[]).reduce((s,p)=>s+(p.eind||0)-p.start,0);
+    const isVakBlok = r.isVakBlok || false;
+    const vanDatum = isVakBlok ? (r.vakVan || new Date(r.start).toLocaleDateString('nl-NL')) : new Date(r.start).toLocaleDateString('nl-NL');
+    const totDatum = isVakBlok ? (r.vakTot || new Date(r.eind).toLocaleDateString('nl-NL')) : new Date(r.eind).toLocaleDateString('nl-NL');
+    rows.push([
+      app.monteurs[r.mIdx]?.naam||'?',
+      r.type==='vrij'?'Vrij/intern':'Werkorder',
+      r.type==='vrij'?(r.vrijNaam||r.vrijCode||'?'):(r.woNaam||(r.woIdx!=null?app.werkorders[r.woIdx]?.naam:null)||'?'),
+      vanDatum, totDatum,
+      isVakBlok ? (r.werkdagen || '') : '',
+      isVakBlok ? '' : new Date(r.start).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}),
+      isVakBlok ? '' : new Date(r.eind).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}),
+      r.type==='vrij'?'':(werkTijd(r)/3600000).toFixed(2),
+      isVakBlok ? '' : Math.round(pMs/60000),
+      r.type==='vrij'?'':(r.omschrijving||''),
+      r.werkzaamheden||''
+    ]);
+  });
+  const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+(String(v||'').replace(/"/g,'""'))+'"').join(';')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=fname+'_'+nu.toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+function isoWeek(d) {
+  const tmp = new Date(d); tmp.setHours(0,0,0,0);
+  tmp.setDate(tmp.getDate()+4-(tmp.getDay()||7));
+  const year = new Date(tmp.getFullYear(),0,1);
+  return Math.ceil((((tmp-year)/86400000)+1)/7);
+}
+
+function vorigeWeekMaandag() {
+  const nu = new Date();
+  const dagVanDeWeek = (nu.getDay() + 6) % 7;
+  const ma = new Date(nu);
+  ma.setDate(nu.getDate() - dagVanDeWeek - 7);
+  ma.setHours(0, 0, 0, 0);
+  return ma.toISOString().slice(0, 10);
+}
+
+function datumToWeekKey(ms) {
+  const d = new Date(ms);
+  const week = isoWeek(d);
+  const tmp = new Date(d); tmp.setHours(0,0,0,0);
+  tmp.setDate(tmp.getDate()+4-(tmp.getDay()||7));
+  const jaar = tmp.getFullYear();
+  return `${jaar}-W${String(week).padStart(2,'0')}`;
+}
+
+function isWeekGesloten(datumMs) {
+  const d = new Date(datumMs);
+  const key = d.getFullYear() + '-W' + String(isoWeek(d)).padStart(2,'0');
+  return (app.geslotenWeken||[]).includes(key);
+}
+
+function weekLabel(weekKey) {
+  const [jaar, wStr] = weekKey.split('-W');
+  const weekNr = parseInt(wStr);
+  const jan4 = new Date(parseInt(jaar), 0, 4);
+  const ma = new Date(jan4);
+  ma.setDate(jan4.getDate() - ((jan4.getDay()||7) - 1) + (weekNr-1)*7);
+  const vr = new Date(ma); vr.setDate(ma.getDate()+4);
+  const maFmt = ma.toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+  const vrFmt = vr.toLocaleDateString('nl-NL',{day:'numeric',month:'short',year:'numeric'});
+  return `Week ${weekNr} — ${maFmt} t/m ${vrFmt}`;
+}
+
+function alleWekenVanJaar() {
+  const nu = new Date();
+  const huidigJaar = nu.getFullYear();
+  const jaren = [huidigJaar];
+  if (!jaren.includes(2027)) jaren.push(2027);
+  if (!jaren.includes(2028)) jaren.push(2028);
+  const weken = []; const gezieneKeys = new Set();
+  jaren.forEach(jaar => {
+    const jan4 = new Date(jaar, 0, 4);
+    const eersteWeekMa = new Date(jan4);
+    eersteWeekMa.setDate(jan4.getDate() - ((jan4.getDay()||7) - 1));
+    eersteWeekMa.setHours(0, 0, 0, 0);
+    let cur = new Date(eersteWeekMa);
+    while (true) {
+      const weekNr = isoWeek(cur);
+      const tmp = new Date(cur); tmp.setHours(0,0,0,0);
+      tmp.setDate(tmp.getDate()+4-(tmp.getDay()||7));
+      const isoJaar = tmp.getFullYear();
+      const weekKey = isoJaar + '-W' + String(weekNr).padStart(2,'0');
+      if (!gezieneKeys.has(weekKey)) {
+        gezieneKeys.add(weekKey);
+        const maMs = cur.getTime(); const zoMs = maMs + 7*86400000 - 1;
+        const vr = new Date(cur); vr.setDate(cur.getDate()+4);
+        const maFmt = cur.toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+        const vrFmt = vr.toLocaleDateString('nl-NL',{day:'numeric',month:'short',year:'numeric'});
+        const label = `Week ${weekNr} — ${maFmt} t/m ${vrFmt}`;
+        weken.push({ key: weekKey, label, maMs, zoMs, weekNr });
+      }
+      cur = new Date(cur.getTime() + 7*86400000);
+      if (cur.getFullYear() > jaar && isoWeek(cur) <= 2) break;
+    }
+  });
+  weken.sort((a,b) => a.maMs - b.maMs);
+  return weken;
+}
+
+// ═══════════════════════ HELPERS ═══════════════════════
+
+function getActief(mIdx){ return app.registraties.find(r=>r.mIdx===mIdx&&!r.eind); }
+function isPauzeActief(reg){ return reg.pauzes?.length>0&&!reg.pauzes[reg.pauzes.length-1].eind; }
+function werkTijd(reg){ const pMs=(reg.pauzes||[]).reduce((s,p)=>s+(p.eind||Date.now())-p.start,0); return((reg.eind||Date.now())-reg.start)-pMs; }
+function fmtDuur(ms){ const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),ss=s%60; return[h,m,ss].map(x=>String(x).padStart(2,'0')).join(':'); }
+function fmtUur(ms){ return(ms/3600000).toFixed(2)+'u'; }
+function initials(naam){ return naam.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?'; }
+function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function uitloggen(){ clearInterval(timerInt); session={rol:null,idx:null}; showScreen('screen-start'); }
+function toast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400); }
+
+function logItemHTML(r, showMonteur=false, showDetails=false) {
+  const isVrij = r.type==='vrij';
+  const isVakBlok = r.isVakBlok || false;
+  const naam = showMonteur ? (app.monteurs[r.mIdx]?.naam||'?') : '';
+  const wo = isVrij ? (r.vrijNaam||r.vrijCode||'?') : (r.woNaam||(r.woIdx!=null?app.werkorders[r.woIdx]?.naam:null)||'?');
+  if (isVakBlok) {
+    const vanStr = r.vakVan || new Date(r.start).toISOString().slice(0,10);
+    const totStr = r.vakTot || new Date(r.eind).toISOString().slice(0,10);
+    const isSameDay = vanStr === totStr;
+    const vanFmt = new Date(vanStr).toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'});
+    const totFmt = new Date(totStr).toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+    const periodeStr = isSameDay ? vanFmt : `${vanFmt} – ${totFmt}`;
+    const werkdagenStr = r.werkdagen ? `${r.werkdagen} werkdag${r.werkdagen!==1?'en':''}` : '';
+    const toelHTML = showDetails&&r.werkzaamheden ? `<div class="log-werkzaamheden">💬 ${r.werkzaamheden}</div>` : '';
+    return `<div class="vak-blok-log">
+      <div class="log-top"><div class="log-project">${naam?naam+' — ':''}🏖 ${wo}</div><div class="log-uren vrij">${werkdagenStr}</div></div>
+      <div class="log-meta">${periodeStr}</div>${toelHTML}
+    </div>`;
+  }
+  const d = new Date(r.start).toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+  const t1 = new Date(r.start).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  const t2 = new Date(r.eind).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  const pMs = (r.pauzes||[]).reduce((s,p)=>s+(p.eind||0)-p.start,0);
+  const urenTxt = isVrij ? (r.vrijNaam||'') : fmtUur(werkTijd(r));
+  const omschrijving = showDetails&&!isVrij&&r.omschrijving ? `<div class="log-omschrijving">📋 ${r.omschrijving}</div>` : '';
+  const werkz = showDetails&&r.werkzaamheden ? `<div class="log-werkzaamheden">✏️ ${r.werkzaamheden}</div>` : '';
+  return `<div class="log-item">
+    <div class="log-top"><div class="log-project">${naam?naam+' — ':''}${wo}</div><div class="log-uren ${isVrij?'vrij':''}">${urenTxt}</div></div>
+    <div class="log-meta">${d} · ${t1}–${t2}${!isVrij&&pMs>0?' · Pauze: '+Math.round(pMs/60000)+' min':''}</div>
+    ${omschrijving}${werkz}
+  </div>`;
+}
+
+// ═══════════════════════ INIT ═══════════════════════
+
+async function init() {
+  await syncLoad();
+  startAutoSync();
+}
+init();
+</script>
+</body>
+</html>
